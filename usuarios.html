@@ -33,93 +33,42 @@
   :focus-visible{outline:none;box-shadow:0 0 0 2px var(--superficie),0 0 0 4px var(--petroleo)}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-  header{
-    background:var(--superficie);border-bottom:1px solid var(--niebla);
-    padding:14px 28px;display:flex;align-items:center;gap:14px;
-  }
-  .lente{
-    width:34px;height:34px;border-radius:50%;
-    background:conic-gradient(from 210deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);
-    display:grid;place-items:center;flex-shrink:0;
-  }
-  .lente::after{
-    content:'';width:24px;height:24px;border-radius:50%;
-    background:radial-gradient(circle at 35% 32%,#2A3138 0%,#171A1E 60%);
-  }
-  .wordmark{
-    font-family:'Archivo',sans-serif;
-    font-variation-settings:'wdth' 122,'wght' 800;
-    font-size:1.2rem;letter-spacing:.04em;line-height:1;
-  }
-  .wordmark small{
-    display:block;font-family:'Lexend';font-weight:400;
-    font-size:.55rem;letter-spacing:.14em;color:var(--gris);
-    text-transform:uppercase;margin-top:2px;font-variation-settings:normal;
-  }
-  .sesion-info{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:.78rem;color:var(--gris)}
+  header{background:var(--superficie);border-bottom:1px solid var(--niebla);padding:14px 28px;display:flex;align-items:center;gap:14px}
+  .lente{width:34px;height:34px;border-radius:50%;background:conic-gradient(from 210deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);display:grid;place-items:center;flex-shrink:0}
+  .lente::after{content:'';width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#2A3138 0%,#171A1E 60%)}
+  .wordmark{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 122,'wght' 800;font-size:1.2rem;letter-spacing:.04em;line-height:1}
+  .wordmark small{display:block;font-family:'Lexend';font-weight:400;font-size:.55rem;letter-spacing:.14em;color:var(--gris);text-transform:uppercase;margin-top:2px;font-variation-settings:normal}
+  .sesion-info{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--gris);flex-wrap:wrap;justify-content:flex-end}
   .sesion-info strong{color:var(--grafito);font-weight:600}
-  .boton-secundario{
-    background:var(--superficie);color:var(--gris);
-    border:1px solid var(--niebla);border-radius:8px;
-    padding:7px 14px;cursor:pointer;
-    font-family:'Lexend';font-size:.76rem;font-weight:500;
-    transition:border-color .15s,color .15s;
-  }
+  .boton-secundario{background:var(--superficie);color:var(--gris);border:1px solid var(--niebla);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:'Lexend';font-size:.76rem;font-weight:500;transition:border-color .15s,color .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
   .boton-secundario:hover{border-color:var(--gris);color:var(--grafito)}
 
   main{max-width:920px;margin:0 auto;padding:30px 24px 60px}
-  h1{
-    font-family:'Archivo',sans-serif;
-    font-variation-settings:'wdth' 112,'wght' 700;
-    font-size:1.45rem;margin-bottom:6px;
-  }
+  h1{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 700;font-size:1.45rem;margin-bottom:6px}
   .subtitulo{font-size:.84rem;color:var(--gris);margin-bottom:28px;line-height:1.5}
 
   .portal{max-width:420px;margin:60px auto;text-align:center;padding:0 20px}
   .portal .lente{width:52px;height:52px;margin:0 auto 18px}
   .portal .lente::after{width:38px;height:38px}
-  .boton-google{
-    display:inline-flex;align-items:center;justify-content:center;gap:11px;
-    width:100%;padding:13px 20px;margin-top:22px;
-    background:var(--petroleo);color:#fff;
-    border:none;border-radius:10px;cursor:pointer;
-    font-family:'Lexend';font-size:.92rem;font-weight:600;
-    transition:background .15s;
-  }
+  .boton-google{display:inline-flex;align-items:center;justify-content:center;gap:11px;width:100%;padding:13px 20px;margin-top:22px;background:var(--petroleo);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Lexend';font-size:.92rem;font-weight:600;transition:background .15s}
   .boton-google:hover{background:var(--petroleo-oscuro)}
-  .aviso-denegado{
-    background:var(--rojo-tinte);color:var(--rojo);
-    border:1px solid var(--rojo);border-radius:10px;
-    padding:14px 16px;font-size:.84rem;margin-top:22px;line-height:1.5;
-  }
+  .aviso-denegado{background:var(--rojo-tinte);color:var(--rojo);border:1px solid var(--rojo);border-radius:10px;padding:14px 16px;font-size:.84rem;margin-top:22px;line-height:1.5}
 
-  .panel{
-    background:var(--superficie);border:1px solid var(--niebla);
-    border-radius:var(--radio);box-shadow:var(--sombra);
-    margin-bottom:24px;overflow:hidden;
-  }
+  .panel{background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);margin-bottom:24px;overflow:hidden}
   .panel-cabecera{padding:16px 22px;border-bottom:1px solid var(--niebla)}
   .panel-cabecera h2{font-size:.98rem;font-weight:600}
   .panel-cabecera p{font-size:.72rem;color:var(--gris);margin-top:2px}
   .panel-cuerpo{padding:22px}
 
   table{width:100%;border-collapse:collapse;font-size:.82rem}
-  thead th{
-    text-align:left;font-size:.64rem;font-weight:600;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--gris);
-    padding:10px 22px;border-bottom:1px solid var(--niebla);background:var(--fondo);
-  }
+  thead th{text-align:left;font-size:.64rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);padding:10px 22px;border-bottom:1px solid var(--niebla);background:var(--fondo)}
   tbody td{padding:12px 22px;border-bottom:1px solid var(--niebla);vertical-align:middle}
   tbody tr:last-child td{border-bottom:none}
   .celda-usuario p{font-weight:500;line-height:1.25}
   .celda-usuario span{font-family:'Spline Sans Mono',monospace;font-size:.68rem;color:var(--gris)}
   .sedes-mono{font-family:'Spline Sans Mono',monospace;font-size:.74rem}
 
-  .chip{
-    display:inline-flex;align-items:center;gap:6px;
-    font-size:.68rem;font-weight:600;
-    padding:3px 10px;border-radius:20px;white-space:nowrap;
-  }
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
   .chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
   .chip.activo{background:var(--exito-tinte);color:var(--exito)}
   .chip.suspendido{background:var(--rojo-tinte);color:var(--rojo)}
@@ -127,11 +76,7 @@
   .chip.rol-superadmin{background:var(--violeta-tinte);color:var(--violeta)}
   .chip.pendiente{background:var(--ambar-tinte);color:var(--ambar)}
 
-  .enlace-accion{
-    background:none;border:none;color:var(--petroleo);
-    font-family:'Lexend';font-size:.78rem;font-weight:600;
-    cursor:pointer;padding:0;margin-right:12px;
-  }
+  .enlace-accion{background:none;border:none;color:var(--petroleo);font-family:'Lexend';font-size:.78rem;font-weight:600;cursor:pointer;padding:0;margin-right:12px}
   .enlace-accion:hover{text-decoration:underline}
   .enlace-accion.peligro{color:var(--rojo)}
   .vacio{padding:26px 22px;font-size:.82rem;color:var(--gris);text-align:center}
@@ -139,16 +84,8 @@
   .grilla{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .campo{display:flex;flex-direction:column;gap:5px}
   .campo.ancho{grid-column:1 / -1}
-  .campo label{
-    font-size:.68rem;font-weight:600;letter-spacing:.06em;
-    text-transform:uppercase;color:var(--gris);
-  }
-  .campo input[type=text], .campo input[type=email], .campo select{
-    font-family:'Lexend';font-size:.86rem;color:var(--grafito);
-    background:var(--fondo);border:1px solid var(--niebla);
-    border-radius:8px;padding:10px 12px;
-    transition:border-color .15s;
-  }
+  .campo label{font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+  .campo input[type=text], .campo input[type=email], .campo select{font-family:'Lexend';font-size:.86rem;color:var(--grafito);background:var(--fondo);border:1px solid var(--niebla);border-radius:8px;padding:10px 12px;transition:border-color .15s}
   .campo input:focus, .campo select:focus{border-color:var(--petroleo)}
   .campo input.mono{font-family:'Spline Sans Mono',monospace;font-size:.82rem}
   .campo input:disabled{opacity:.6;cursor:not-allowed}
@@ -159,12 +96,7 @@
   .check input{width:16px;height:16px;accent-color:var(--petroleo);cursor:pointer}
 
   .acciones{display:flex;align-items:center;gap:14px;margin-top:22px;flex-wrap:wrap}
-  .boton-guardar{
-    background:var(--petroleo);color:#fff;border:none;border-radius:10px;
-    padding:11px 26px;cursor:pointer;
-    font-family:'Lexend';font-size:.86rem;font-weight:600;
-    transition:background .15s;
-  }
+  .boton-guardar{background:var(--petroleo);color:#fff;border:none;border-radius:10px;padding:11px 26px;cursor:pointer;font-family:'Lexend';font-size:.86rem;font-weight:600;transition:background .15s}
   .boton-guardar:hover{background:var(--petroleo-oscuro)}
   .boton-guardar:disabled{opacity:.55;cursor:wait}
   .mensaje{font-size:.78rem;font-weight:500}
@@ -182,7 +114,6 @@
 </head>
 <body>
 
-<!-- ═════════ PORTAL DE ACCESO ═════════ -->
 <div class="portal" id="portal">
   <div class="lente" aria-hidden="true"></div>
   <h1 class="wordmark" style="font-size:2rem">SIVO<small>Visión Óptica Integral</small></h1>
@@ -191,13 +122,13 @@
   <div class="aviso-denegado oculto" id="avisoDenegado"></div>
 </div>
 
-<!-- ═════════ PANEL ═════════ -->
 <div id="app" class="oculto">
   <header>
     <div class="lente" aria-hidden="true"></div>
     <div class="wordmark">SIVO<small>Usuarios y roles</small></div>
     <div class="sesion-info">
       <span><strong id="nombreUsuario"></strong> · Súper Administrador</span>
+      <a href="index.html" class="boton-secundario">← Tablero</a>
       <button class="boton-secundario" id="btnSalir">Cerrar sesión</button>
     </div>
   </header>
@@ -210,7 +141,6 @@
       con los permisos exactos que definiste aquí. Sin invitación, ninguna cuenta puede acceder a SIVO.
     </p>
 
-    <!-- ───── USUARIOS REGISTRADOS ───── -->
     <section class="panel" aria-label="Usuarios registrados">
       <div class="panel-cabecera">
         <h2>Usuarios registrados</h2>
@@ -225,7 +155,6 @@
       <div class="vacio oculto" id="usuariosVacio">No hay usuarios registrados.</div>
     </section>
 
-    <!-- ───── INVITACIONES PENDIENTES ───── -->
     <section class="panel" aria-label="Invitaciones pendientes">
       <div class="panel-cabecera">
         <h2>Invitaciones pendientes</h2>
@@ -240,7 +169,6 @@
       <div class="vacio oculto" id="invitacionesVacio">No hay invitaciones pendientes.</div>
     </section>
 
-    <!-- ───── FORMULARIO ───── -->
     <section class="panel" aria-label="Invitar o editar usuario">
       <div class="panel-cabecera">
         <h2 id="tituloForm">Invitar nuevo usuario</h2>
@@ -334,7 +262,6 @@
   let sedes = [], usuarios = [], invitaciones = [];
   let uidActual = null;
 
-  // ───── acceso ─────
   $('btnEntrar').addEventListener('click', async () => {
     $('avisoDenegado').classList.add('oculto');
     try { await signInWithPopup(auth, proveedor); }
@@ -373,7 +300,6 @@
     $('avisoDenegado').classList.remove('oculto');
   }
 
-  // ───── carga de datos ─────
   async function cargarTodo() {
     await cargarSedes();
     await cargarUsuarios();
@@ -429,7 +355,6 @@
     });
   }
 
-  // ───── formulario ─────
   function pintarChecksSedes(seleccionadas) {
     const contenedor = $('checksSedes');
     contenedor.innerHTML = '';
