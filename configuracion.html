@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIVO — Configuración</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Lexend:wght@300;400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fondo:#F6F8F8;
+    --superficie:#FFFFFF;
+    --niebla:#E4EAEA;
+    --grafito:#171A1E;
+    --gris:#5C666B;
+    --petroleo:#0C7268;
+    --petroleo-oscuro:#0A5B53;
+    --petroleo-tinte:#E3F2F0;
+    --violeta:#5B4FD8;
+    --violeta-tinte:#EDEAFB;
+    --ambar:#B45309;
+    --ambar-tinte:#FBEEDC;
+    --rojo:#C2362F;
+    --rojo-tinte:#FAE7E5;
+    --exito:#12805C;
+    --exito-tinte:#E5F5EC;
+    --flash:linear-gradient(90deg,#2FD9A8 0%,#4BB8D8 50%,#7C6CF0 100%);
+    --radio:12px;
+    --sombra:0 1px 2px rgba(23,26,30,.05),0 4px 16px rgba(23,26,30,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Lexend',sans-serif;
+    background:var(--fondo);
+    color:var(--grafito);
+    min-height:100vh;
+  }
+  :focus-visible{outline:none;box-shadow:0 0 0 2px var(--superficie),0 0 0 4px var(--petroleo)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  header{
+    background:var(--superficie);border-bottom:1px solid var(--niebla);
+    padding:14px 28px;display:flex;align-items:center;gap:14px;
+  }
+  .lente{
+    width:34px;height:34px;border-radius:50%;
+    background:conic-gradient(from 210deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);
+    display:grid;place-items:center;flex-shrink:0;
+  }
+  .lente::after{
+    content:'';width:24px;height:24px;border-radius:50%;
+    background:radial-gradient(circle at 35% 32%,#2A3138 0%,#171A1E 60%);
+  }
+  .wordmark{
+    font-family:'Archivo',sans-serif;
+    font-variation-settings:'wdth' 122,'wght' 800;
+    font-size:1.2rem;letter-spacing:.04em;line-height:1;
+  }
+  .wordmark small{
+    display:block;font-family:'Lexend';font-weight:400;
+    font-size:.55rem;letter-spacing:.14em;color:var(--gris);
+    text-transform:uppercase;margin-top:2px;font-variation-settings:normal;
+  }
+  .sesion-info{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:.78rem;color:var(--gris)}
+  .sesion-info strong{color:var(--grafito);font-weight:600}
+  .boton-salir{
+    background:var(--superficie);color:var(--gris);
+    border:1px solid var(--niebla);border-radius:8px;
+    padding:7px 14px;cursor:pointer;
+    font-family:'Lexend';font-size:.76rem;font-weight:500;
+    transition:border-color .15s,color .15s;
+  }
+  .boton-salir:hover{border-color:var(--gris);color:var(--grafito)}
+
+  main{max-width:860px;margin:0 auto;padding:30px 24px 60px}
+  h1{
+    font-family:'Archivo',sans-serif;
+    font-variation-settings:'wdth' 112,'wght' 700;
+    font-size:1.45rem;margin-bottom:6px;
+  }
+  .subtitulo{font-size:.84rem;color:var(--gris);margin-bottom:28px;line-height:1.5}
+
+  /* pantallas de acceso */
+  .portal{max-width:420px;margin:60px auto;text-align:center}
+  .portal .lente{width:52px;height:52px;margin:0 auto 18px}
+  .portal .lente::after{width:38px;height:38px}
+  .boton-google{
+    display:inline-flex;align-items:center;justify-content:center;gap:11px;
+    width:100%;padding:13px 20px;margin-top:22px;
+    background:var(--petroleo);color:#fff;
+    border:none;border-radius:10px;cursor:pointer;
+    font-family:'Lexend';font-size:.92rem;font-weight:600;
+    transition:background .15s;
+  }
+  .boton-google:hover{background:var(--petroleo-oscuro)}
+  .aviso-denegado{
+    background:var(--rojo-tinte);color:var(--rojo);
+    border:1px solid var(--rojo);border-radius:10px;
+    padding:14px 16px;font-size:.84rem;margin-top:22px;line-height:1.5;
+  }
+
+  /* paneles */
+  .panel{
+    background:var(--superficie);border:1px solid var(--niebla);
+    border-radius:var(--radio);box-shadow:var(--sombra);
+    margin-bottom:24px;overflow:hidden;
+  }
+  .panel-cabecera{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 22px;border-bottom:1px solid var(--niebla);
+  }
+  .panel-cabecera h2{font-size:.98rem;font-weight:600}
+  .panel-cabecera p{font-size:.72rem;color:var(--gris);margin-top:2px}
+  .panel-cuerpo{padding:22px}
+
+  .grilla{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .campo{display:flex;flex-direction:column;gap:5px}
+  .campo.ancho{grid-column:1 / -1}
+  .campo label{
+    font-size:.68rem;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--gris);
+  }
+  .campo input[type=text], .campo input[type=email]{
+    font-family:'Lexend';font-size:.86rem;color:var(--grafito);
+    background:var(--fondo);border:1px solid var(--niebla);
+    border-radius:8px;padding:10px 12px;
+    transition:border-color .15s;
+  }
+  .campo input:focus{border-color:var(--petroleo)}
+  .campo input.mono{font-family:'Spline Sans Mono',monospace;font-size:.82rem}
+  .campo .pista{font-size:.66rem;color:var(--gris)}
+
+  .check{display:flex;align-items:center;gap:9px;font-size:.84rem;font-weight:500;cursor:pointer}
+  .check input{width:17px;height:17px;accent-color:var(--petroleo);cursor:pointer}
+
+  .acciones{display:flex;align-items:center;gap:14px;margin-top:22px}
+  .boton-guardar{
+    background:var(--petroleo);color:#fff;border:none;border-radius:10px;
+    padding:11px 26px;cursor:pointer;
+    font-family:'Lexend';font-size:.86rem;font-weight:600;
+    transition:background .15s;
+  }
+  .boton-guardar:hover{background:var(--petroleo-oscuro)}
+  .boton-guardar:disabled{opacity:.55;cursor:wait}
+  .mensaje{font-size:.78rem;font-weight:500}
+  .mensaje.ok{color:var(--exito)}
+  .mensaje.error{color:var(--rojo)}
+
+  /* sucursales */
+  table{width:100%;border-collapse:collapse;font-size:.83rem}
+  thead th{
+    text-align:left;font-size:.64rem;font-weight:600;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--gris);
+    padding:10px 22px;border-bottom:1px solid var(--niebla);background:var(--fondo);
+  }
+  tbody td{padding:12px 22px;border-bottom:1px solid var(--niebla);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  .codigo-sede{font-family:'Spline Sans Mono',monospace;font-weight:600;font-size:.78rem}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:.68rem;font-weight:600;
+    padding:3px 10px;border-radius:20px;white-space:nowrap;
+  }
+  .chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+  .chip.activa{background:var(--exito-tinte);color:var(--exito)}
+  .chip.inactiva{background:var(--rojo-tinte);color:var(--rojo)}
+  .chip.lab{background:var(--violeta-tinte);color:var(--violeta)}
+  .enlace-editar{
+    background:none;border:none;color:var(--petroleo);
+    font-family:'Lexend';font-size:.78rem;font-weight:600;
+    cursor:pointer;padding:0;
+  }
+  .enlace-editar:hover{text-decoration:underline}
+  .vacio{padding:26px 22px;font-size:.82rem;color:var(--gris);text-align:center}
+
+  .oculto{display:none!important}
+
+  @media (max-width:640px){
+    .grilla{grid-template-columns:1fr}
+    main{padding:20px 14px 40px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═════════ PORTAL DE ACCESO ═════════ -->
+<div class="portal" id="portal">
+  <div class="lente" aria-hidden="true"></div>
+  <h1 class="wordmark" style="font-size:2rem">SIVO<small>Visión Óptica Integral</small></h1>
+  <p class="subtitulo" style="margin-top:16px">Panel de configuración del sistema.<br>Acceso exclusivo del Súper Administrador.</p>
+  <button class="boton-google" id="btnEntrar">Entrar con Google</button>
+  <div class="aviso-denegado oculto" id="avisoDenegado"></div>
+</div>
+
+<!-- ═════════ PANEL DE CONFIGURACIÓN ═════════ -->
+<div id="app" class="oculto">
+  <header>
+    <div class="lente" aria-hidden="true"></div>
+    <div class="wordmark">SIVO<small>Configuración</small></div>
+    <div class="sesion-info">
+      <span><strong id="nombreUsuario"></strong> · Súper Administrador</span>
+      <button class="boton-salir" id="btnSalir">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main>
+    <h1>Configuración del sistema</h1>
+    <p class="subtitulo">
+      Estos datos alimentan automáticamente los encabezados de documentos, plantillas y créditos de todo SIVO.
+      Puedes guardarlos con valores provisionales y actualizarlos cuando tengas la información definitiva — el sistema completo se actualiza solo.
+    </p>
+
+    <!-- ───── EMPRESA ───── -->
+    <section class="panel" aria-label="Datos de la empresa">
+      <div class="panel-cabecera">
+        <div>
+          <h2>Datos de la empresa</h2>
+          <p>Documento configuracion/empresa · principio white-label</p>
+        </div>
+      </div>
+      <div class="panel-cuerpo">
+        <form id="formEmpresa">
+          <div class="grilla">
+            <div class="campo">
+              <label for="empRazon">Razón social</label>
+              <input type="text" id="empRazon" placeholder="Ej.: Ópticas D-Velez S.A.S.">
+            </div>
+            <div class="campo">
+              <label for="empComercial">Nombre comercial</label>
+              <input type="text" id="empComercial" placeholder="Ej.: Ópticas D-Velez">
+            </div>
+            <div class="campo">
+              <label for="empNit">NIT</label>
+              <input type="text" id="empNit" class="mono" placeholder="Ej.: 900.123.456-7">
+            </div>
+            <div class="campo">
+              <label for="empRepresentante">Representante legal</label>
+              <input type="text" id="empRepresentante" placeholder="Nombre completo">
+            </div>
+            <div class="campo ancho">
+              <label for="empDireccion">Dirección</label>
+              <input type="text" id="empDireccion" placeholder="Dirección de la sede principal">
+            </div>
+            <div class="campo">
+              <label for="empCiudad">Ciudad</label>
+              <input type="text" id="empCiudad" placeholder="Ej.: Villavicencio">
+            </div>
+            <div class="campo">
+              <label for="empTelefono">Teléfono</label>
+              <input type="text" id="empTelefono" class="mono" placeholder="Ej.: (608) 123 4567">
+            </div>
+            <div class="campo">
+              <label for="empWhatsapp">WhatsApp</label>
+              <input type="text" id="empWhatsapp" class="mono" placeholder="Ej.: 310 123 4567">
+              <span class="pista">Número que enviará recordatorios en fase 3</span>
+            </div>
+            <div class="campo">
+              <label for="empEmail">Email</label>
+              <input type="email" id="empEmail" placeholder="contacto@empresa.com">
+            </div>
+          </div>
+          <div class="acciones">
+            <button type="submit" class="boton-guardar" id="btnGuardarEmpresa">Guardar datos de empresa</button>
+            <span class="mensaje" id="msjEmpresa" role="status"></span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ───── SUCURSALES ───── -->
+    <section class="panel" aria-label="Sucursales">
+      <div class="panel-cabecera">
+        <div>
+          <h2>Sucursales</h2>
+          <p>Colección sucursales · el código define los consecutivos de órdenes (OT-CÓDIGO-0001)</p>
+        </div>
+      </div>
+
+      <table id="tablaSedes">
+        <thead>
+          <tr><th>Código</th><th>Nombre</th><th>Ciudad</th><th>Laboratorio</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody id="cuerpoSedes"></tbody>
+      </table>
+      <div class="vacio" id="sedesVacio">Aún no hay sucursales registradas. Crea la primera con el formulario de abajo.</div>
+
+      <div class="panel-cuerpo" style="border-top:1px solid var(--niebla)">
+        <form id="formSede">
+          <input type="hidden" id="sedeEditandoId">
+          <div class="grilla">
+            <div class="campo">
+              <label for="sedeCodigo">Código de sede</label>
+              <input type="text" id="sedeCodigo" class="mono" maxlength="5" placeholder="Ej.: VLL" style="text-transform:uppercase">
+              <span class="pista">2-5 letras. Definitivo: no se puede cambiar después (identifica la sede y sus órdenes)</span>
+            </div>
+            <div class="campo">
+              <label for="sedeNombre">Nombre de la sede</label>
+              <input type="text" id="sedeNombre" placeholder="Ej.: D-Velez Centro">
+            </div>
+            <div class="campo ancho">
+              <label for="sedeDireccion">Dirección</label>
+              <input type="text" id="sedeDireccion" placeholder="Dirección de la sede">
+            </div>
+            <div class="campo">
+              <label for="sedeCiudad">Ciudad</label>
+              <input type="text" id="sedeCiudad" placeholder="Ej.: Villavicencio">
+            </div>
+            <div class="campo">
+              <label for="sedeTelefono">Teléfono</label>
+              <input type="text" id="sedeTelefono" class="mono" placeholder="Teléfono de la sede">
+            </div>
+            <div class="campo">
+              <label for="sedeWhatsapp">WhatsApp</label>
+              <input type="text" id="sedeWhatsapp" class="mono" placeholder="WhatsApp de la sede">
+            </div>
+            <div class="campo">
+              <label for="sedeEmail">Email</label>
+              <input type="email" id="sedeEmail" placeholder="Email de la sede">
+            </div>
+            <div class="campo ancho" style="flex-direction:row;gap:26px;align-items:center">
+              <label class="check"><input type="checkbox" id="sedeLab"> Esta sede tiene laboratorio propio</label>
+              <label class="check"><input type="checkbox" id="sedeActiva" checked> Sede activa</label>
+            </div>
+          </div>
+          <div class="acciones">
+            <button type="submit" class="boton-guardar" id="btnGuardarSede">Crear sucursal</button>
+            <button type="button" class="boton-salir oculto" id="btnCancelarEdicion">Cancelar edición</button>
+            <span class="mensaje" id="msjSede" role="status"></span>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdUihN1s_SqdKEJAoobOkOjQmVVk0foyQ",
+    authDomain: "sivo-dvelez.firebaseapp.com",
+    projectId: "sivo-dvelez",
+    storageBucket: "sivo-dvelez.firebasestorage.app",
+    messagingSenderId: "686206424202",
+    appId: "1:686206424202:web:e6fc32b40c7183ea108973"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const proveedor = new GoogleAuthProvider();
+
+  const $ = (id) => document.getElementById(id);
+  const portal = $('portal'), panelApp = $('app');
+  const avisoDenegado = $('avisoDenegado');
+
+  // ───── acceso ─────
+  $('btnEntrar').addEventListener('click', async () => {
+    avisoDenegado.classList.add('oculto');
+    try { await signInWithPopup(auth, proveedor); }
+    catch (e) {
+      avisoDenegado.textContent = 'No se pudo iniciar sesión (' + e.code + ').';
+      avisoDenegado.classList.remove('oculto');
+    }
+  });
+  $('btnSalir').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (usuario) => {
+    if (!usuario) {
+      portal.classList.remove('oculto');
+      panelApp.classList.add('oculto');
+      return;
+    }
+    try {
+      const perfil = await getDoc(doc(db, 'usuarios', usuario.uid));
+      if (perfil.exists() && perfil.data().estado === 'activo' && perfil.data().rol === 'superadmin') {
+        $('nombreUsuario').textContent = perfil.data().nombre || usuario.displayName;
+        portal.classList.add('oculto');
+        panelApp.classList.remove('oculto');
+        await cargarEmpresa();
+        await cargarSedes();
+      } else {
+        denegar('Tu cuenta está registrada pero no tiene rol de Súper Administrador. Este panel es exclusivo de ese rol.');
+      }
+    } catch (e) {
+      denegar('Acceso denegado por las reglas de seguridad: esta cuenta no está en la lista blanca de SIVO.');
+    }
+  });
+
+  function denegar(mensaje) {
+    signOut(auth);
+    avisoDenegado.textContent = mensaje;
+    avisoDenegado.classList.remove('oculto');
+  }
+
+  // ───── empresa ─────
+  const camposEmpresa = {
+    razonSocial: 'empRazon', nombreComercial: 'empComercial', nit: 'empNit',
+    representanteLegal: 'empRepresentante', direccion: 'empDireccion',
+    ciudad: 'empCiudad', telefono: 'empTelefono', whatsapp: 'empWhatsapp', email: 'empEmail'
+  };
+
+  async function cargarEmpresa() {
+    try {
+      const snap = await getDoc(doc(db, 'configuracion', 'empresa'));
+      if (snap.exists()) {
+        const datos = snap.data();
+        for (const [campo, inputId] of Object.entries(camposEmpresa)) {
+          $(inputId).value = datos[campo] || '';
+        }
+      }
+    } catch (e) { /* primera vez: documento aún no existe */ }
+  }
+
+  $('formEmpresa').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const msj = $('msjEmpresa'), btn = $('btnGuardarEmpresa');
+    msj.className = 'mensaje'; msj.textContent = 'Guardando…'; btn.disabled = true;
+    const datos = {};
+    for (const [campo, inputId] of Object.entries(camposEmpresa)) {
+      datos[campo] = $(inputId).value.trim();
+    }
+    datos.modificadoPor = auth.currentUser.uid;
+    datos.fechaModificacion = serverTimestamp();
+    try {
+      await setDoc(doc(db, 'configuracion', 'empresa'), datos, { merge: true });
+      msj.classList.add('ok'); msj.textContent = '✓ Datos de empresa guardados';
+    } catch (e) {
+      msj.classList.add('error'); msj.textContent = 'Error al guardar (' + (e.code || e.message) + ')';
+    }
+    btn.disabled = false;
+    setTimeout(() => { msj.textContent = ''; }, 4000);
+  });
+
+  // ───── sucursales ─────
+  let sedes = [];
+
+  async function cargarSedes() {
+    try {
+      const snap = await getDocs(collection(db, 'sucursales'));
+      sedes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      pintarSedes();
+    } catch (e) { /* colección vacía */ }
+  }
+
+  function pintarSedes() {
+    const cuerpo = $('cuerpoSedes');
+    cuerpo.innerHTML = '';
+    $('sedesVacio').classList.toggle('oculto', sedes.length > 0);
+    $('tablaSedes').style.display = sedes.length > 0 ? '' : 'none';
+    for (const sede of sedes) {
+      const fila = document.createElement('tr');
+      fila.innerHTML =
+        '<td class="codigo-sede">' + sede.id + '</td>' +
+        '<td>' + (sede.nombre || '—') + '</td>' +
+        '<td>' + (sede.ciudad || '—') + '</td>' +
+        '<td>' + (sede.tieneLaboratorio ? '<span class="chip lab">Lab. propio</span>' : '—') + '</td>' +
+        '<td><span class="chip ' + (sede.estado === 'activa' ? 'activa">Activa' : 'inactiva">Inactiva') + '</span></td>' +
+        '<td><button class="enlace-editar" data-id="' + sede.id + '">Editar</button></td>';
+      cuerpo.appendChild(fila);
+    }
+    cuerpo.querySelectorAll('.enlace-editar').forEach(btn => {
+      btn.addEventListener('click', () => editarSede(btn.dataset.id));
+    });
+  }
+
+  function editarSede(id) {
+    const sede = sedes.find(s => s.id === id);
+    if (!sede) return;
+    $('sedeEditandoId').value = id;
+    $('sedeCodigo').value = id;
+    $('sedeCodigo').disabled = true;
+    $('sedeNombre').value = sede.nombre || '';
+    $('sedeDireccion').value = sede.direccion || '';
+    $('sedeCiudad').value = sede.ciudad || '';
+    $('sedeTelefono').value = sede.telefono || '';
+    $('sedeWhatsapp').value = sede.whatsapp || '';
+    $('sedeEmail').value = sede.email || '';
+    $('sedeLab').checked = !!sede.tieneLaboratorio;
+    $('sedeActiva').checked = sede.estado === 'activa';
+    $('btnGuardarSede').textContent = 'Guardar cambios de ' + id;
+    $('btnCancelarEdicion').classList.remove('oculto');
+    $('sedeNombre').focus();
+  }
+
+  function limpiarFormularioSede() {
+    $('formSede').reset();
+    $('sedeEditandoId').value = '';
+    $('sedeCodigo').disabled = false;
+    $('sedeActiva').checked = true;
+    $('btnGuardarSede').textContent = 'Crear sucursal';
+    $('btnCancelarEdicion').classList.add('oculto');
+  }
+
+  $('btnCancelarEdicion').addEventListener('click', limpiarFormularioSede);
+
+  $('formSede').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const msj = $('msjSede'), btn = $('btnGuardarSede');
+    msj.className = 'mensaje';
+
+    const editando = $('sedeEditandoId').value;
+    const codigo = editando || $('sedeCodigo').value.trim().toUpperCase();
+
+    if (!/^[A-Z]{2,5}$/.test(codigo)) {
+      msj.classList.add('error');
+      msj.textContent = 'El código debe tener entre 2 y 5 letras (sin números ni espacios).';
+      return;
+    }
+    if (!editando && sedes.some(s => s.id === codigo)) {
+      msj.classList.add('error');
+      msj.textContent = 'Ya existe una sede con el código ' + codigo + '.';
+      return;
+    }
+    if (!$('sedeNombre').value.trim()) {
+      msj.classList.add('error');
+      msj.textContent = 'El nombre de la sede es obligatorio.';
+      return;
+    }
+
+    msj.textContent = 'Guardando…'; btn.disabled = true;
+
+    const datos = {
+      nombre: $('sedeNombre').value.trim(),
+      codigo: codigo,
+      direccion: $('sedeDireccion').value.trim(),
+      ciudad: $('sedeCiudad').value.trim(),
+      telefono: $('sedeTelefono').value.trim(),
+      whatsapp: $('sedeWhatsapp').value.trim(),
+      email: $('sedeEmail').value.trim(),
+      tieneLaboratorio: $('sedeLab').checked,
+      estado: $('sedeActiva').checked ? 'activa' : 'inactiva',
+      modificadoPor: auth.currentUser.uid,
+      fechaModificacion: serverTimestamp()
+    };
+    if (!editando) {
+      datos.creadoPor = auth.currentUser.uid;
+      datos.fechaCreacion = serverTimestamp();
+    }
+
+    try {
+      await setDoc(doc(db, 'sucursales', codigo), datos, { merge: true });
+      msj.classList.add('ok');
+      msj.textContent = editando ? '✓ Sede ' + codigo + ' actualizada' : '✓ Sede ' + codigo + ' creada';
+      limpiarFormularioSede();
+      await cargarSedes();
+    } catch (e) {
+      msj.classList.add('error');
+      msj.textContent = 'Error al guardar (' + (e.code || e.message) + ')';
+    }
+    btn.disabled = false;
+    setTimeout(() => { msj.textContent = ''; }, 4000);
+  });
+</script>
+
+</body>
+</html>
