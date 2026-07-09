@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SIVO — Acceso</title>
+<title>SIVO — Sistema Integral de Visión Óptica</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Lexend:wght@300;400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -19,6 +19,8 @@
     --petroleo-tinte:#E3F2F0;
     --violeta:#5B4FD8;
     --violeta-tinte:#EDEAFB;
+    --ambar:#B45309;
+    --ambar-tinte:#FBEEDC;
     --rojo:#C2362F;
     --rojo-tinte:#FAE7E5;
     --exito:#12805C;
@@ -28,35 +30,37 @@
     --sombra:0 1px 2px rgba(23,26,30,.05),0 4px 16px rgba(23,26,30,.04);
   }
   *{margin:0;padding:0;box-sizing:border-box}
+  html{font-size:16px}
   body{
     font-family:'Lexend',sans-serif;
     background:var(--fondo);
     color:var(--grafito);
     min-height:100vh;
-    display:grid;place-items:center;
-    padding:24px;
   }
   :focus-visible{outline:none;box-shadow:0 0 0 2px var(--superficie),0 0 0 4px var(--petroleo)}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  .oculto{display:none!important}
 
-  .tarjeta{
-    background:var(--superficie);
-    border:1px solid var(--niebla);
-    border-radius:var(--radio);
-    box-shadow:var(--sombra);
-    width:100%;max-width:420px;
-    padding:40px 36px 32px;
-    text-align:center;
+  /* ═════ portal de acceso ═════ */
+  .portal{
+    min-height:100vh;display:grid;place-items:center;padding:24px;
+  }
+  .portal-tarjeta{
+    background:var(--superficie);border:1px solid var(--niebla);
+    border-radius:var(--radio);box-shadow:var(--sombra);
+    width:100%;max-width:420px;padding:40px 36px 32px;text-align:center;
   }
   .lente{
-    width:52px;height:52px;border-radius:50%;
+    width:34px;height:34px;border-radius:50%;
     background:conic-gradient(from 210deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);
-    display:grid;place-items:center;margin:0 auto 18px;
+    display:grid;place-items:center;flex-shrink:0;
   }
   .lente::after{
-    content:'';width:38px;height:38px;border-radius:50%;
+    content:'';width:24px;height:24px;border-radius:50%;
     background:radial-gradient(circle at 35% 32%,#2A3138 0%,#171A1E 60%);
   }
+  .portal .lente{width:52px;height:52px;margin:0 auto 18px}
+  .portal .lente::after{width:38px;height:38px}
   .wordmark{
     font-family:'Archivo',sans-serif;
     font-variation-settings:'wdth' 122,'wght' 800;
@@ -67,8 +71,7 @@
     font-size:.62rem;letter-spacing:.16em;color:var(--gris);
     text-transform:uppercase;margin-top:6px;font-variation-settings:normal;
   }
-  .descripcion{font-size:.85rem;color:var(--gris);margin:18px 0 26px;line-height:1.5}
-
+  .portal-descripcion{font-size:.85rem;color:var(--gris);margin:18px 0 26px;line-height:1.5}
   .boton-google{
     display:inline-flex;align-items:center;justify-content:center;gap:11px;
     width:100%;padding:13px 20px;
@@ -78,92 +81,318 @@
     transition:background .15s;
   }
   .boton-google:hover{background:var(--petroleo-oscuro)}
-  .boton-google svg{width:19px;height:19px;flex-shrink:0}
-  .boton-google .g-fondo{fill:#fff}
+  .boton-google svg{width:19px;height:19px;flex-shrink:0;fill:#fff}
+  .portal-estado{margin-top:20px;font-size:.8rem;color:var(--gris);min-height:1.2em}
+  .portal-estado.error{
+    background:var(--rojo-tinte);color:var(--rojo);
+    border:1px solid var(--rojo);border-radius:10px;
+    padding:13px 15px;line-height:1.5;text-align:left;
+  }
+  .portal-estado.bienvenida{
+    background:var(--exito-tinte);color:var(--exito);
+    border:1px solid var(--exito);border-radius:10px;
+    padding:13px 15px;line-height:1.5;text-align:left;
+  }
+  .portal-pie{margin-top:26px;font-size:.66rem;color:var(--gris)}
 
-  .estado{margin-top:22px;font-size:.8rem;color:var(--gris);min-height:1.2em}
-  .estado.error{color:var(--rojo)}
-
-  .sesion{display:none;text-align:left;margin-top:26px;border-top:1px solid var(--niebla);padding-top:22px}
-  .sesion.visible{display:block}
-  .sesion h2{font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);margin-bottom:14px}
-  .campo{margin-bottom:14px}
-  .campo label{display:block;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);margin-bottom:4px}
-  .campo .valor{
-    font-family:'Spline Sans Mono',monospace;font-size:.82rem;
-    background:var(--fondo);border:1px solid var(--niebla);border-radius:8px;
-    padding:9px 11px;word-break:break-all;
+  /* ═════ aplicación ═════ */
+  .app{
+    display:grid;grid-template-columns:236px 1fr;min-height:100vh;
+  }
+  aside{
+    background:var(--superficie);
+    border-right:1px solid var(--niebla);
+    padding:22px 14px;
+    display:flex;flex-direction:column;gap:26px;
+    position:sticky;top:0;height:100vh;
+  }
+  .marca{display:flex;align-items:center;gap:11px;padding:2px 8px}
+  .marca .wordmark{font-size:1.35rem}
+  .marca .wordmark small{font-size:.575rem;letter-spacing:.14em;margin-top:3px}
+  nav{display:flex;flex-direction:column;gap:2px;flex:1}
+  .nav-titulo{
+    font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--gris);padding:14px 10px 6px;
+  }
+  nav a{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;border-radius:9px;
+    color:var(--gris);text-decoration:none;
+    font-size:.865rem;font-weight:500;
+    position:relative;transition:background .15s,color .15s;
+  }
+  nav a:hover{background:var(--fondo);color:var(--grafito)}
+  nav a.activo{background:var(--petroleo-tinte);color:var(--petroleo-oscuro);font-weight:600}
+  nav a.activo::before{
+    content:'';position:absolute;left:-14px;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--flash);
+  }
+  nav a.pendiente{opacity:.45;cursor:default;pointer-events:none}
+  nav a svg{width:17px;height:17px;flex-shrink:0}
+  .nav-pronto{
+    margin-left:auto;font-size:.58rem;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--gris);
+    border:1px solid var(--niebla);border-radius:20px;padding:1px 7px;
+  }
+  .sidebar-pie{
+    border-top:1px solid var(--niebla);padding-top:14px;
+    font-size:.66rem;color:var(--gris);padding-left:10px;line-height:1.6;
   }
 
-  .veredicto{
-    margin-top:6px;border-radius:10px;padding:14px 15px;
-    font-size:.84rem;font-weight:500;line-height:1.45;text-align:left;
+  main{padding:0 34px 40px;min-width:0}
+  header{
+    display:flex;align-items:center;gap:18px;
+    padding:19px 0 17px;margin-bottom:26px;
+    border-bottom:1px solid var(--niebla);
   }
-  .veredicto.ok{background:var(--exito-tinte);color:var(--exito);border:1px solid var(--exito)}
-  .veredicto.denegado{background:var(--rojo-tinte);color:var(--rojo);border:1px solid var(--rojo)}
-  .veredicto .rol-chip{
-    display:inline-flex;align-items:center;gap:6px;
-    font-family:'Spline Sans Mono',monospace;
-    font-size:.74rem;font-weight:600;
-    background:var(--superficie);border-radius:20px;
-    padding:2px 10px;margin-left:4px;
+  .sede{
+    display:flex;align-items:center;gap:9px;
+    background:var(--superficie);border:1px solid var(--niebla);
+    border-radius:10px;padding:8px 14px;cursor:pointer;
+    font-family:'Lexend';font-size:.83rem;font-weight:600;color:var(--grafito);
+    transition:border-color .15s;position:relative;
   }
-  .veredicto .rol-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
-
+  .sede:hover{border-color:var(--petroleo)}
+  .sede .punto{width:7px;height:7px;border-radius:50%;background:var(--petroleo)}
+  .sede svg{width:13px;height:13px;color:var(--gris)}
+  .sede-menu{
+    position:absolute;top:calc(100% + 6px);left:0;min-width:220px;
+    background:var(--superficie);border:1px solid var(--niebla);
+    border-radius:10px;box-shadow:var(--sombra);z-index:30;
+    padding:6px;display:flex;flex-direction:column;gap:2px;
+  }
+  .sede-menu button{
+    display:flex;align-items:center;gap:9px;text-align:left;
+    background:none;border:none;border-radius:8px;
+    padding:9px 11px;cursor:pointer;
+    font-family:'Lexend';font-size:.82rem;font-weight:500;color:var(--grafito);
+  }
+  .sede-menu button:hover{background:var(--fondo)}
+  .sede-menu button.actual{background:var(--petroleo-tinte);color:var(--petroleo-oscuro);font-weight:600}
+  .sede-menu .codigo{font-family:'Spline Sans Mono',monospace;font-size:.7rem;color:var(--gris)}
+  .usuario{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .usuario .avatar{
+    width:34px;height:34px;border-radius:50%;
+    background:var(--grafito);color:#fff;
+    display:grid;place-items:center;font-size:.78rem;font-weight:600;
+  }
+  .usuario .datos{text-align:right}
+  .usuario .datos p{font-size:.8rem;font-weight:600;line-height:1.2}
+  .usuario .datos span{font-size:.68rem;color:var(--gris)}
   .boton-salir{
-    display:block;width:100%;margin-top:18px;padding:10px;
     background:var(--superficie);color:var(--gris);
-    border:1px solid var(--niebla);border-radius:8px;cursor:pointer;
-    font-family:'Lexend';font-size:.8rem;font-weight:500;
+    border:1px solid var(--niebla);border-radius:8px;
+    padding:7px 12px;cursor:pointer;
+    font-family:'Lexend';font-size:.72rem;font-weight:500;
     transition:border-color .15s,color .15s;
   }
   .boton-salir:hover{border-color:var(--gris);color:var(--grafito)}
 
-  .pie{margin-top:26px;font-size:.66rem;color:var(--gris)}
+  .titulo-pagina{display:flex;align-items:baseline;gap:14px;margin-bottom:22px}
+  h1{
+    font-family:'Archivo',sans-serif;
+    font-variation-settings:'wdth' 112,'wght' 700;
+    font-size:1.55rem;letter-spacing:.005em;
+  }
+  .fecha{font-size:.8rem;color:var(--gris)}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+  .kpi{
+    background:var(--superficie);border:1px solid var(--niebla);
+    border-radius:var(--radio);padding:17px 18px 15px;
+    box-shadow:var(--sombra);position:relative;overflow:hidden;
+    transition:border-color .15s;
+  }
+  .kpi:hover{border-color:transparent}
+  .kpi:hover::before{opacity:1}
+  .kpi::before{
+    content:'';position:absolute;inset:0;border-radius:var(--radio);
+    padding:1px;background:var(--flash);opacity:0;transition:opacity .2s;
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+  }
+  .kpi .etiqueta{font-size:.72rem;font-weight:500;color:var(--gris);letter-spacing:.03em;margin-bottom:9px}
+  .kpi .valor{
+    font-family:'Spline Sans Mono',monospace;font-size:1.9rem;font-weight:600;
+    line-height:1;font-feature-settings:'tnum';
+  }
+  .kpi .detalle{font-size:.72rem;color:var(--gris);margin-top:8px}
+
+  .aviso-desarrollo{
+    background:var(--superficie);border:1px solid var(--niebla);
+    border-radius:var(--radio);box-shadow:var(--sombra);
+    padding:34px;text-align:center;
+  }
+  .aviso-desarrollo .lente{width:44px;height:44px;margin:0 auto 16px}
+  .aviso-desarrollo .lente::after{width:32px;height:32px}
+  .aviso-desarrollo h2{font-size:1.05rem;font-weight:600;margin-bottom:8px}
+  .aviso-desarrollo p{font-size:.84rem;color:var(--gris);line-height:1.6;max-width:520px;margin:0 auto}
+  .aviso-desarrollo .modulos-listos{
+    display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap;
+  }
+  .aviso-desarrollo .modulos-listos a{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--petroleo-tinte);color:var(--petroleo-oscuro);
+    border-radius:20px;padding:7px 16px;
+    font-size:.78rem;font-weight:600;text-decoration:none;
+    transition:background .15s;
+  }
+  .aviso-desarrollo .modulos-listos a:hover{background:#D3EBE7}
+
+  @media (max-width:1080px){
+    .app{grid-template-columns:1fr}
+    aside{display:none}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    main{padding:0 18px 30px}
+  }
 </style>
 </head>
 <body>
 
-<main class="tarjeta">
-  <div class="lente" aria-hidden="true"></div>
-  <h1 class="wordmark">SIVO<small>Visión Óptica Integral</small></h1>
-  <p class="descripcion">Verificación de acceso y lista blanca.<br>Inicia sesión para validar tu registro en el sistema.</p>
+<!-- ═════════ PORTAL ═════════ -->
+<div class="portal" id="portal">
+  <div class="portal-tarjeta">
+    <div class="lente" aria-hidden="true"></div>
+    <h1 class="wordmark">SIVO<small>Visión Óptica Integral</small></h1>
+    <p class="portal-descripcion">Sistema de gestión clínica y comercial.<br>Entra con tu cuenta autorizada.</p>
+    <button class="boton-google" id="btnEntrar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18A10.96 10.96 0 0 0 1 12c0 1.77.43 3.45 1.18 4.94l3.66-2.84z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+      Entrar con Google
+    </button>
+    <p class="portal-estado" id="portalEstado" role="status"></p>
+    <p class="portal-pie">Ópticas D-Velez · Desarrollado por <strong>TourLat</strong></p>
+  </div>
+</div>
 
-  <button class="boton-google" id="btnEntrar">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="g-fondo" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path class="g-fondo" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path class="g-fondo" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18A10.96 10.96 0 0 0 1 12c0 1.77.43 3.45 1.18 4.94l3.66-2.84z"/><path class="g-fondo" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-    Entrar con Google
-  </button>
-
-  <p class="estado" id="estado" role="status"></p>
-
-  <section class="sesion" id="sesion" aria-label="Datos de la sesión">
-    <h2>Sesión iniciada</h2>
-    <div class="campo">
-      <label for="valNombre">Nombre</label>
-      <div class="valor" id="valNombre"></div>
-    </div>
-    <div class="campo">
-      <label for="valCorreo">Correo</label>
-      <div class="valor" id="valCorreo"></div>
-    </div>
-    <div class="campo">
-      <label for="valUid">UID</label>
-      <div class="valor" id="valUid"></div>
+<!-- ═════════ APLICACIÓN ═════════ -->
+<div class="app oculto" id="app">
+  <aside>
+    <div class="marca">
+      <div class="lente" aria-hidden="true"></div>
+      <div class="wordmark">SIVO<small>Visión Óptica Integral</small></div>
     </div>
 
-    <div id="veredicto" class="veredicto" role="status"></div>
+    <nav aria-label="Módulos">
+      <a href="index.html" class="activo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Tablero
+      </a>
+      <a href="#" class="pendiente" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+        Pacientes <span class="nav-pronto">Pronto</span>
+      </a>
+      <a href="#" class="pendiente" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>
+        Agenda <span class="nav-pronto">Pronto</span>
+      </a>
+      <a href="#" class="pendiente" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18l-2 12H5L3 7z"/><path d="M8 7a4 4 0 0 1 8 0"/></svg>
+        Ventas <span class="nav-pronto">Pronto</span>
+      </a>
+      <a href="#" class="pendiente" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12a8 8 0 1 1 16 0"/><circle cx="8" cy="14" r="3.4"/><circle cx="16" cy="14" r="3.4"/><path d="M11.4 14h1.2"/></svg>
+        Órdenes <span class="nav-pronto">Pronto</span>
+      </a>
+      <a href="#" class="pendiente" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6M10 3v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 9V3"/></svg>
+        Laboratorio <span class="nav-pronto">Pronto</span>
+      </a>
+      <a href="#" class="pendiente" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8"/></svg>
+        Inventario <span class="nav-pronto">Pronto</span>
+      </a>
+      <a href="#" class="pendiente" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5a7 7 0 0 1 4 6.3V15l2 3H3l2-3v-3.7A7 7 0 0 1 15 5z" transform="scale(.9) translate(1.3 1)"/><path d="M10 20a2.5 2.5 0 0 0 4.4 0"/></svg>
+        Seguimientos <span class="nav-pronto">Pronto</span>
+      </a>
 
-    <button class="boton-salir" id="btnSalir">Cerrar sesión</button>
-  </section>
+      <p class="nav-titulo" id="tituloAdmin">Administración</p>
+      <a href="configuracion.html" id="navConfiguracion">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l7-5 7 5v13M10 21v-6h4v6M3 21h18"/></svg>
+        Configuración
+      </a>
+      <a href="usuarios.html" id="navUsuarios">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19c1-3 4-4.5 8-4.5s7 1.5 8 4.5"/><circle cx="12" cy="8" r="3.5"/></svg>
+        Usuarios y roles
+      </a>
+      <a href="#" class="pendiente" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M10 19V9M16 19v-7M22 19H2" transform="translate(0 1)"/></svg>
+        Reportes <span class="nav-pronto">Pronto</span>
+      </a>
+    </nav>
 
-  <p class="pie">Ópticas D-Velez · Desarrollado por <strong>TourLat</strong></p>
-</main>
+    <div class="sidebar-pie" id="pieMarca">
+      Ópticas D-Velez<br>
+      Desarrollado por <strong>TourLat</strong>
+    </div>
+  </aside>
+
+  <main>
+    <header>
+      <button class="sede" id="btnSede" aria-label="Cambiar de sede">
+        <span class="punto" aria-hidden="true"></span>
+        <span id="nombreSede">Sin sede</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="usuario">
+        <div class="datos">
+          <p id="usuarioNombre"></p>
+          <span id="usuarioRol"></span>
+        </div>
+        <div class="avatar" id="usuarioAvatar" aria-hidden="true"></div>
+        <button class="boton-salir" id="btnSalir">Salir</button>
+      </div>
+    </header>
+
+    <div class="titulo-pagina">
+      <h1>Tablero</h1>
+      <span class="fecha" id="fechaHoy"></span>
+    </div>
+
+    <section class="kpis" aria-label="Indicadores del día">
+      <article class="kpi">
+        <p class="etiqueta">Citas de hoy</p>
+        <p class="valor">—</p>
+        <p class="detalle">Módulo de Agenda en desarrollo</p>
+      </article>
+      <article class="kpi">
+        <p class="etiqueta">Órdenes en producción</p>
+        <p class="valor">—</p>
+        <p class="detalle">Módulo de Órdenes en desarrollo</p>
+      </article>
+      <article class="kpi">
+        <p class="etiqueta">Pacientes por llamar</p>
+        <p class="valor">—</p>
+        <p class="detalle">Módulo de Seguimientos en desarrollo</p>
+      </article>
+      <article class="kpi">
+        <p class="etiqueta">Ventas del mes</p>
+        <p class="valor">—</p>
+        <p class="detalle">Módulo de Ventas en desarrollo</p>
+      </article>
+    </section>
+
+    <div class="aviso-desarrollo">
+      <div class="lente" aria-hidden="true"></div>
+      <h2>SIVO está en construcción — Fase 1</h2>
+      <p>
+        La infraestructura, la seguridad y la administración del sistema ya están operativas.
+        Los módulos operativos (Pacientes, Agenda, Ventas, Órdenes y Seguimientos)
+        se irán activando en este tablero a medida que se desarrollen.
+      </p>
+      <div class="modulos-listos" id="accesosAdmin">
+        <a href="configuracion.html">⚙ Configuración</a>
+        <a href="usuarios.html">👥 Usuarios y roles</a>
+      </div>
+    </div>
+  </main>
+</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, doc, getDoc }
+  import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -180,12 +409,7 @@
   const db = getFirestore(app);
   const proveedor = new GoogleAuthProvider();
 
-  const btnEntrar = document.getElementById('btnEntrar');
-  const btnSalir  = document.getElementById('btnSalir');
-  const estado    = document.getElementById('estado');
-  const sesion    = document.getElementById('sesion');
-  const veredicto = document.getElementById('veredicto');
-
+  const $ = (id) => document.getElementById(id);
   const nombresRol = {
     superadmin: 'Súper Administrador',
     admin_sucursal: 'Admin de Sucursal',
@@ -194,65 +418,182 @@
     tecnico_lab: 'Técnico de Laboratorio'
   };
 
-  btnEntrar.addEventListener('click', async () => {
+  let perfilActual = null;
+  let sedesDisponibles = [];
+
+  // ───── fecha del tablero ─────
+  const hoy = new Date();
+  $('fechaHoy').textContent = hoy.toLocaleDateString('es-CO', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  }).replace(/^./, c => c.toUpperCase());
+
+  // ───── acceso ─────
+  $('btnEntrar').addEventListener('click', async () => {
+    const estado = $('portalEstado');
+    estado.className = 'portal-estado';
     estado.textContent = 'Abriendo ventana de Google…';
-    estado.classList.remove('error');
-    try {
-      await signInWithPopup(auth, proveedor);
-    } catch (e) {
+    try { await signInWithPopup(auth, proveedor); }
+    catch (e) {
       estado.classList.add('error');
-      if (e.code === 'auth/popup-closed-by-user') {
-        estado.textContent = 'Ventana cerrada antes de completar el acceso. Intenta de nuevo.';
-      } else if (e.code === 'auth/unauthorized-domain') {
-        estado.textContent = 'Este dominio no está autorizado en Firebase Authentication.';
-      } else {
-        estado.textContent = 'No se pudo iniciar sesión (' + e.code + ').';
+      estado.textContent = e.code === 'auth/popup-closed-by-user'
+        ? 'Ventana cerrada antes de completar el acceso. Intenta de nuevo.'
+        : 'No se pudo iniciar sesión (' + e.code + ').';
+    }
+  });
+  $('btnSalir').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (usuario) => {
+    if (!usuario) {
+      $('portal').classList.remove('oculto');
+      $('app').classList.add('oculto');
+      return;
+    }
+    const estado = $('portalEstado');
+    estado.className = 'portal-estado';
+    estado.textContent = 'Verificando acceso…';
+
+    try {
+      // 1. ¿Ya está en la lista blanca?
+      let perfilSnap = await getDoc(doc(db, 'usuarios', usuario.uid));
+
+      // 2. Si no existe, ¿tiene invitación pendiente? → activación automática
+      if (!perfilSnap.exists()) {
+        const correo = (usuario.email || '').toLowerCase();
+        const invSnap = await getDoc(doc(db, 'invitaciones', correo)).catch(() => null);
+        if (invSnap && invSnap.exists()) {
+          const inv = invSnap.data();
+          estado.textContent = 'Activando tu cuenta por primera vez…';
+          await setDoc(doc(db, 'usuarios', usuario.uid), {
+            email: correo,
+            nombre: inv.nombre || usuario.displayName || '',
+            telefono: '',
+            rol: inv.rol,
+            registroProfesional: inv.registroProfesional || '',
+            sucursales: inv.sucursales || [],
+            sucursalPrincipal: inv.sucursalPrincipal || '',
+            estado: 'activo',
+            creadoPor: inv.creadoPor || '',
+            fechaCreacion: serverTimestamp()
+          });
+          await deleteDoc(doc(db, 'invitaciones', correo)).catch(() => {});
+          perfilSnap = await getDoc(doc(db, 'usuarios', usuario.uid));
+          estado.classList.add('bienvenida');
+          estado.textContent = '✓ Cuenta activada. Bienvenido/a a SIVO, ' + (inv.nombre || '') + '.';
+        }
       }
+
+      // 3. Veredicto final
+      if (perfilSnap.exists() && perfilSnap.data().estado === 'activo') {
+        perfilActual = { uid: usuario.uid, ...perfilSnap.data() };
+        await entrarAlSistema();
+      } else if (perfilSnap.exists()) {
+        await signOut(auth);
+        estado.className = 'portal-estado error';
+        estado.textContent = 'Tu cuenta está suspendida. Contacta al administrador del sistema.';
+      } else {
+        await signOut(auth);
+        estado.className = 'portal-estado error';
+        estado.textContent = 'Tu cuenta de Google no está autorizada en SIVO. Si crees que es un error, contacta al administrador.';
+      }
+    } catch (e) {
+      await signOut(auth);
+      estado.className = 'portal-estado error';
+      estado.textContent = 'Acceso denegado: esta cuenta no está autorizada en SIVO.';
     }
   });
 
-  btnSalir.addEventListener('click', () => signOut(auth));
+  // ───── entrada al sistema ─────
+  async function entrarAlSistema() {
+    $('usuarioNombre').textContent = perfilActual.nombre || '';
+    $('usuarioRol').textContent = nombresRol[perfilActual.rol] || perfilActual.rol;
+    $('usuarioAvatar').textContent = iniciales(perfilActual.nombre);
 
-  async function verificarListaBlanca(usuario) {
-    veredicto.className = 'veredicto';
-    veredicto.textContent = 'Verificando registro en la lista blanca…';
+    // rol no administrador: ocultar accesos de administración
+    if (perfilActual.rol !== 'superadmin') {
+      $('navConfiguracion').classList.add('oculto');
+      $('accesosAdmin').classList.add('oculto');
+      if (perfilActual.rol !== 'admin_sucursal') {
+        $('navUsuarios').classList.add('oculto');
+        $('tituloAdmin').classList.add('oculto');
+      }
+    }
+
+    await cargarSedes();
+    aplicarSedeActiva();
+
+    // marca white-label desde configuracion/empresa
     try {
-      const ref = doc(db, 'usuarios', usuario.uid);
-      const perfil = await getDoc(ref);
-      if (perfil.exists() && perfil.data().estado === 'activo') {
-        const rol = perfil.data().rol;
-        veredicto.classList.add('ok');
-        veredicto.innerHTML = '✓ Acceso verificado. Registro activo en la lista blanca con rol '
-          + '<span class="rol-chip">' + (nombresRol[rol] || rol) + '</span>'
-          + '<br>Las reglas de seguridad de Firestore reconocieron tu perfil correctamente.';
-      } else {
-        veredicto.classList.add('denegado');
-        veredicto.textContent = 'Tu cuenta de Google es válida, pero no está registrada como usuario activo de SIVO. Contacta al administrador.';
+      const emp = await getDoc(doc(db, 'configuracion', 'empresa'));
+      if (emp.exists() && emp.data().nombreComercial) {
+        $('pieMarca').innerHTML = emp.data().nombreComercial +
+          '<br>Desarrollado por <strong>TourLat</strong>';
       }
-    } catch (e) {
-      veredicto.classList.add('denegado');
-      if (e.code === 'permission-denied') {
-        veredicto.textContent = 'Acceso denegado por las reglas de seguridad: esta cuenta no está en la lista blanca de SIVO.';
-      } else {
-        veredicto.textContent = 'Error al verificar el registro (' + (e.code || e.message) + ').';
-      }
+    } catch (e) { /* sin datos aún */ }
+
+    $('portal').classList.add('oculto');
+    $('app').classList.remove('oculto');
+  }
+
+  function iniciales(nombre) {
+    return (nombre || '?').split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase();
+  }
+
+  // ───── sede activa ─────
+  async function cargarSedes() {
+    try {
+      const snap = await getDocs(collection(db, 'sucursales'));
+      const todas = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .filter(s => s.estado === 'activa');
+      sedesDisponibles = perfilActual.rol === 'superadmin'
+        ? todas
+        : todas.filter(s => (perfilActual.sucursales || []).includes(s.id));
+    } catch (e) { sedesDisponibles = []; }
+  }
+
+  function sedeGuardada() {
+    try { return localStorage.getItem('sivo_sede_activa'); } catch { return null; }
+  }
+
+  function aplicarSedeActiva() {
+    let activa = sedeGuardada();
+    if (!sedesDisponibles.some(s => s.id === activa)) {
+      activa = perfilActual.sucursalPrincipal && sedesDisponibles.some(s => s.id === perfilActual.sucursalPrincipal)
+        ? perfilActual.sucursalPrincipal
+        : (sedesDisponibles[0] ? sedesDisponibles[0].id : null);
+    }
+    if (activa) {
+      try { localStorage.setItem('sivo_sede_activa', activa); } catch {}
+      const sede = sedesDisponibles.find(s => s.id === activa);
+      $('nombreSede').textContent = sede ? sede.nombre : activa;
+    } else {
+      $('nombreSede').textContent = 'Sin sede asignada';
     }
   }
 
-  onAuthStateChanged(auth, (usuario) => {
-    if (usuario) {
-      document.getElementById('valNombre').textContent = usuario.displayName || '—';
-      document.getElementById('valCorreo').textContent = usuario.email || '—';
-      document.getElementById('valUid').textContent = usuario.uid;
-      sesion.classList.add('visible');
-      btnEntrar.style.display = 'none';
-      estado.textContent = '';
-      verificarListaBlanca(usuario);
-    } else {
-      sesion.classList.remove('visible');
-      btnEntrar.style.display = '';
-      veredicto.className = 'veredicto';
-      veredicto.textContent = '';
+  $('btnSede').addEventListener('click', () => {
+    const abierto = document.querySelector('.sede-menu');
+    if (abierto) { abierto.remove(); return; }
+    if (sedesDisponibles.length === 0) return;
+    const menu = document.createElement('div');
+    menu.className = 'sede-menu';
+    const activa = sedeGuardada();
+    for (const sede of sedesDisponibles) {
+      const opcion = document.createElement('button');
+      opcion.className = sede.id === activa ? 'actual' : '';
+      opcion.innerHTML = '<span class="codigo">' + sede.id + '</span> ' + (sede.nombre || sede.id);
+      opcion.addEventListener('click', () => {
+        try { localStorage.setItem('sivo_sede_activa', sede.id); } catch {}
+        aplicarSedeActiva();
+        menu.remove();
+      });
+      menu.appendChild(opcion);
+    }
+    $('btnSede').appendChild(menu);
+  });
+  document.addEventListener('click', (ev) => {
+    if (!$('btnSede').contains(ev.target)) {
+      const menu = document.querySelector('.sede-menu');
+      if (menu) menu.remove();
     }
   });
 </script>
