@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIVO — Usuarios y roles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Lexend:wght@300;400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fondo:#F6F8F8;
+    --superficie:#FFFFFF;
+    --niebla:#E4EAEA;
+    --grafito:#171A1E;
+    --gris:#5C666B;
+    --petroleo:#0C7268;
+    --petroleo-oscuro:#0A5B53;
+    --petroleo-tinte:#E3F2F0;
+    --violeta:#5B4FD8;
+    --violeta-tinte:#EDEAFB;
+    --ambar:#B45309;
+    --ambar-tinte:#FBEEDC;
+    --rojo:#C2362F;
+    --rojo-tinte:#FAE7E5;
+    --exito:#12805C;
+    --exito-tinte:#E5F5EC;
+    --radio:12px;
+    --sombra:0 1px 2px rgba(23,26,30,.05),0 4px 16px rgba(23,26,30,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Lexend',sans-serif;background:var(--fondo);color:var(--grafito);min-height:100vh}
+  :focus-visible{outline:none;box-shadow:0 0 0 2px var(--superficie),0 0 0 4px var(--petroleo)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  header{
+    background:var(--superficie);border-bottom:1px solid var(--niebla);
+    padding:14px 28px;display:flex;align-items:center;gap:14px;
+  }
+  .lente{
+    width:34px;height:34px;border-radius:50%;
+    background:conic-gradient(from 210deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);
+    display:grid;place-items:center;flex-shrink:0;
+  }
+  .lente::after{
+    content:'';width:24px;height:24px;border-radius:50%;
+    background:radial-gradient(circle at 35% 32%,#2A3138 0%,#171A1E 60%);
+  }
+  .wordmark{
+    font-family:'Archivo',sans-serif;
+    font-variation-settings:'wdth' 122,'wght' 800;
+    font-size:1.2rem;letter-spacing:.04em;line-height:1;
+  }
+  .wordmark small{
+    display:block;font-family:'Lexend';font-weight:400;
+    font-size:.55rem;letter-spacing:.14em;color:var(--gris);
+    text-transform:uppercase;margin-top:2px;font-variation-settings:normal;
+  }
+  .sesion-info{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:.78rem;color:var(--gris)}
+  .sesion-info strong{color:var(--grafito);font-weight:600}
+  .boton-secundario{
+    background:var(--superficie);color:var(--gris);
+    border:1px solid var(--niebla);border-radius:8px;
+    padding:7px 14px;cursor:pointer;
+    font-family:'Lexend';font-size:.76rem;font-weight:500;
+    transition:border-color .15s,color .15s;
+  }
+  .boton-secundario:hover{border-color:var(--gris);color:var(--grafito)}
+
+  main{max-width:920px;margin:0 auto;padding:30px 24px 60px}
+  h1{
+    font-family:'Archivo',sans-serif;
+    font-variation-settings:'wdth' 112,'wght' 700;
+    font-size:1.45rem;margin-bottom:6px;
+  }
+  .subtitulo{font-size:.84rem;color:var(--gris);margin-bottom:28px;line-height:1.5}
+
+  .portal{max-width:420px;margin:60px auto;text-align:center;padding:0 20px}
+  .portal .lente{width:52px;height:52px;margin:0 auto 18px}
+  .portal .lente::after{width:38px;height:38px}
+  .boton-google{
+    display:inline-flex;align-items:center;justify-content:center;gap:11px;
+    width:100%;padding:13px 20px;margin-top:22px;
+    background:var(--petroleo);color:#fff;
+    border:none;border-radius:10px;cursor:pointer;
+    font-family:'Lexend';font-size:.92rem;font-weight:600;
+    transition:background .15s;
+  }
+  .boton-google:hover{background:var(--petroleo-oscuro)}
+  .aviso-denegado{
+    background:var(--rojo-tinte);color:var(--rojo);
+    border:1px solid var(--rojo);border-radius:10px;
+    padding:14px 16px;font-size:.84rem;margin-top:22px;line-height:1.5;
+  }
+
+  .panel{
+    background:var(--superficie);border:1px solid var(--niebla);
+    border-radius:var(--radio);box-shadow:var(--sombra);
+    margin-bottom:24px;overflow:hidden;
+  }
+  .panel-cabecera{padding:16px 22px;border-bottom:1px solid var(--niebla)}
+  .panel-cabecera h2{font-size:.98rem;font-weight:600}
+  .panel-cabecera p{font-size:.72rem;color:var(--gris);margin-top:2px}
+  .panel-cuerpo{padding:22px}
+
+  table{width:100%;border-collapse:collapse;font-size:.82rem}
+  thead th{
+    text-align:left;font-size:.64rem;font-weight:600;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--gris);
+    padding:10px 22px;border-bottom:1px solid var(--niebla);background:var(--fondo);
+  }
+  tbody td{padding:12px 22px;border-bottom:1px solid var(--niebla);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  .celda-usuario p{font-weight:500;line-height:1.25}
+  .celda-usuario span{font-family:'Spline Sans Mono',monospace;font-size:.68rem;color:var(--gris)}
+  .sedes-mono{font-family:'Spline Sans Mono',monospace;font-size:.74rem}
+
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:.68rem;font-weight:600;
+    padding:3px 10px;border-radius:20px;white-space:nowrap;
+  }
+  .chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+  .chip.activo{background:var(--exito-tinte);color:var(--exito)}
+  .chip.suspendido{background:var(--rojo-tinte);color:var(--rojo)}
+  .chip.rol{background:var(--petroleo-tinte);color:var(--petroleo-oscuro)}
+  .chip.rol-superadmin{background:var(--violeta-tinte);color:var(--violeta)}
+  .chip.pendiente{background:var(--ambar-tinte);color:var(--ambar)}
+
+  .enlace-accion{
+    background:none;border:none;color:var(--petroleo);
+    font-family:'Lexend';font-size:.78rem;font-weight:600;
+    cursor:pointer;padding:0;margin-right:12px;
+  }
+  .enlace-accion:hover{text-decoration:underline}
+  .enlace-accion.peligro{color:var(--rojo)}
+  .vacio{padding:26px 22px;font-size:.82rem;color:var(--gris);text-align:center}
+
+  .grilla{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .campo{display:flex;flex-direction:column;gap:5px}
+  .campo.ancho{grid-column:1 / -1}
+  .campo label{
+    font-size:.68rem;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--gris);
+  }
+  .campo input[type=text], .campo input[type=email], .campo select{
+    font-family:'Lexend';font-size:.86rem;color:var(--grafito);
+    background:var(--fondo);border:1px solid var(--niebla);
+    border-radius:8px;padding:10px 12px;
+    transition:border-color .15s;
+  }
+  .campo input:focus, .campo select:focus{border-color:var(--petroleo)}
+  .campo input.mono{font-family:'Spline Sans Mono',monospace;font-size:.82rem}
+  .campo input:disabled{opacity:.6;cursor:not-allowed}
+  .campo .pista{font-size:.66rem;color:var(--gris)}
+
+  .grupo-checks{display:flex;flex-wrap:wrap;gap:14px;padding:4px 0}
+  .check{display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:500;cursor:pointer}
+  .check input{width:16px;height:16px;accent-color:var(--petroleo);cursor:pointer}
+
+  .acciones{display:flex;align-items:center;gap:14px;margin-top:22px;flex-wrap:wrap}
+  .boton-guardar{
+    background:var(--petroleo);color:#fff;border:none;border-radius:10px;
+    padding:11px 26px;cursor:pointer;
+    font-family:'Lexend';font-size:.86rem;font-weight:600;
+    transition:background .15s;
+  }
+  .boton-guardar:hover{background:var(--petroleo-oscuro)}
+  .boton-guardar:disabled{opacity:.55;cursor:wait}
+  .mensaje{font-size:.78rem;font-weight:500}
+  .mensaje.ok{color:var(--exito)}
+  .mensaje.error{color:var(--rojo)}
+
+  .oculto{display:none!important}
+
+  @media (max-width:640px){
+    .grilla{grid-template-columns:1fr}
+    main{padding:20px 14px 40px}
+    thead th, tbody td{padding-left:12px;padding-right:12px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═════════ PORTAL DE ACCESO ═════════ -->
+<div class="portal" id="portal">
+  <div class="lente" aria-hidden="true"></div>
+  <h1 class="wordmark" style="font-size:2rem">SIVO<small>Visión Óptica Integral</small></h1>
+  <p class="subtitulo" style="margin-top:16px">Usuarios y roles.<br>Acceso exclusivo del Súper Administrador.</p>
+  <button class="boton-google" id="btnEntrar">Entrar con Google</button>
+  <div class="aviso-denegado oculto" id="avisoDenegado"></div>
+</div>
+
+<!-- ═════════ PANEL ═════════ -->
+<div id="app" class="oculto">
+  <header>
+    <div class="lente" aria-hidden="true"></div>
+    <div class="wordmark">SIVO<small>Usuarios y roles</small></div>
+    <div class="sesion-info">
+      <span><strong id="nombreUsuario"></strong> · Súper Administrador</span>
+      <button class="boton-secundario" id="btnSalir">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main>
+    <h1>Usuarios y roles</h1>
+    <p class="subtitulo">
+      Invita a nuevos usuarios con su correo de Google y define su rol y sedes.
+      Cuando la persona entre por primera vez, el sistema activará su perfil automáticamente
+      con los permisos exactos que definiste aquí. Sin invitación, ninguna cuenta puede acceder a SIVO.
+    </p>
+
+    <!-- ───── USUARIOS REGISTRADOS ───── -->
+    <section class="panel" aria-label="Usuarios registrados">
+      <div class="panel-cabecera">
+        <h2>Usuarios registrados</h2>
+        <p>Perfiles activos en la lista blanca</p>
+      </div>
+      <table id="tablaUsuarios">
+        <thead>
+          <tr><th>Usuario</th><th>Rol</th><th>Sedes</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody id="cuerpoUsuarios"></tbody>
+      </table>
+      <div class="vacio oculto" id="usuariosVacio">No hay usuarios registrados.</div>
+    </section>
+
+    <!-- ───── INVITACIONES PENDIENTES ───── -->
+    <section class="panel" aria-label="Invitaciones pendientes">
+      <div class="panel-cabecera">
+        <h2>Invitaciones pendientes</h2>
+        <p>Personas invitadas que aún no ingresan por primera vez</p>
+      </div>
+      <table id="tablaInvitaciones">
+        <thead>
+          <tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>Sedes</th><th></th></tr>
+        </thead>
+        <tbody id="cuerpoInvitaciones"></tbody>
+      </table>
+      <div class="vacio oculto" id="invitacionesVacio">No hay invitaciones pendientes.</div>
+    </section>
+
+    <!-- ───── FORMULARIO ───── -->
+    <section class="panel" aria-label="Invitar o editar usuario">
+      <div class="panel-cabecera">
+        <h2 id="tituloForm">Invitar nuevo usuario</h2>
+        <p id="subtituloForm">El correo debe ser una cuenta de Google (Gmail o Workspace)</p>
+      </div>
+      <div class="panel-cuerpo">
+        <form id="formUsuario">
+          <input type="hidden" id="editandoUid">
+          <div class="grilla">
+            <div class="campo">
+              <label for="fEmail">Correo de Google</label>
+              <input type="email" id="fEmail" class="mono" placeholder="persona@gmail.com">
+            </div>
+            <div class="campo">
+              <label for="fNombre">Nombre completo</label>
+              <input type="text" id="fNombre" placeholder="Nombre y apellidos">
+            </div>
+            <div class="campo">
+              <label for="fRol">Rol</label>
+              <select id="fRol">
+                <option value="recepcionista">Recepcionista / Asesor</option>
+                <option value="optometra">Optómetra</option>
+                <option value="tecnico_lab">Técnico de Laboratorio</option>
+                <option value="admin_sucursal">Admin de Sucursal</option>
+                <option value="superadmin">Súper Administrador</option>
+              </select>
+            </div>
+            <div class="campo" id="campoRegistro">
+              <label for="fRegistro">Registro profesional</label>
+              <input type="text" id="fRegistro" class="mono" placeholder="Solo para optómetras">
+              <span class="pista">Firma cada atención clínica (Res. 1995/1999)</span>
+            </div>
+            <div class="campo ancho">
+              <label>Sedes asignadas</label>
+              <div class="grupo-checks" id="checksSedes"></div>
+              <span class="pista">Define a qué sucursales tiene acceso operativo</span>
+            </div>
+            <div class="campo">
+              <label for="fSedePrincipal">Sede principal</label>
+              <select id="fSedePrincipal"><option value="">— Selecciona sedes primero —</option></select>
+            </div>
+            <div class="campo" id="campoEstado">
+              <label for="fEstado">Estado</label>
+              <select id="fEstado">
+                <option value="activo">Activo</option>
+                <option value="suspendido">Suspendido</option>
+              </select>
+            </div>
+          </div>
+          <div class="acciones">
+            <button type="submit" class="boton-guardar" id="btnGuardar">Crear invitación</button>
+            <button type="button" class="boton-secundario oculto" id="btnCancelar">Cancelar edición</button>
+            <span class="mensaje" id="msjForm" role="status"></span>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdUihN1s_SqdKEJAoobOkOjQmVVk0foyQ",
+    authDomain: "sivo-dvelez.firebaseapp.com",
+    projectId: "sivo-dvelez",
+    storageBucket: "sivo-dvelez.firebasestorage.app",
+    messagingSenderId: "686206424202",
+    appId: "1:686206424202:web:e6fc32b40c7183ea108973"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const proveedor = new GoogleAuthProvider();
+
+  const $ = (id) => document.getElementById(id);
+  const nombresRol = {
+    superadmin: 'Súper Administrador',
+    admin_sucursal: 'Admin de Sucursal',
+    optometra: 'Optómetra',
+    recepcionista: 'Recepcionista',
+    tecnico_lab: 'Téc. Laboratorio'
+  };
+
+  let sedes = [], usuarios = [], invitaciones = [];
+  let uidActual = null;
+
+  // ───── acceso ─────
+  $('btnEntrar').addEventListener('click', async () => {
+    $('avisoDenegado').classList.add('oculto');
+    try { await signInWithPopup(auth, proveedor); }
+    catch (e) {
+      $('avisoDenegado').textContent = 'No se pudo iniciar sesión (' + e.code + ').';
+      $('avisoDenegado').classList.remove('oculto');
+    }
+  });
+  $('btnSalir').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (usuario) => {
+    if (!usuario) {
+      $('portal').classList.remove('oculto');
+      $('app').classList.add('oculto');
+      return;
+    }
+    try {
+      const perfil = await getDoc(doc(db, 'usuarios', usuario.uid));
+      if (perfil.exists() && perfil.data().estado === 'activo' && perfil.data().rol === 'superadmin') {
+        uidActual = usuario.uid;
+        $('nombreUsuario').textContent = perfil.data().nombre || usuario.displayName;
+        $('portal').classList.add('oculto');
+        $('app').classList.remove('oculto');
+        await cargarTodo();
+      } else {
+        denegar('Tu cuenta está registrada pero no tiene rol de Súper Administrador.');
+      }
+    } catch (e) {
+      denegar('Acceso denegado: esta cuenta no está en la lista blanca de SIVO.');
+    }
+  });
+
+  function denegar(mensaje) {
+    signOut(auth);
+    $('avisoDenegado').textContent = mensaje;
+    $('avisoDenegado').classList.remove('oculto');
+  }
+
+  // ───── carga de datos ─────
+  async function cargarTodo() {
+    await cargarSedes();
+    await cargarUsuarios();
+    await cargarInvitaciones();
+  }
+
+  async function cargarSedes() {
+    const snap = await getDocs(collection(db, 'sucursales'));
+    sedes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    pintarChecksSedes([]);
+  }
+
+  async function cargarUsuarios() {
+    const snap = await getDocs(collection(db, 'usuarios'));
+    usuarios = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    const cuerpo = $('cuerpoUsuarios');
+    cuerpo.innerHTML = '';
+    $('usuariosVacio').classList.toggle('oculto', usuarios.length > 0);
+    for (const u of usuarios) {
+      const esYo = u.uid === uidActual;
+      const fila = document.createElement('tr');
+      fila.innerHTML =
+        '<td class="celda-usuario"><p>' + (u.nombre || '—') + (esYo ? ' (tú)' : '') + '</p><span>' + (u.email || '') + '</span></td>' +
+        '<td><span class="chip rol' + (u.rol === 'superadmin' ? ' rol-superadmin' : '') + '">' + (nombresRol[u.rol] || u.rol) + '</span></td>' +
+        '<td class="sedes-mono">' + ((u.sucursales && u.sucursales.length) ? u.sucursales.join(', ') : '—') + '</td>' +
+        '<td><span class="chip ' + (u.estado === 'activo' ? 'activo">Activo' : 'suspendido">Suspendido') + '</span></td>' +
+        '<td><button class="enlace-accion" data-uid="' + u.uid + '">Editar</button></td>';
+      cuerpo.appendChild(fila);
+    }
+    cuerpo.querySelectorAll('.enlace-accion').forEach(btn => {
+      btn.addEventListener('click', () => editarUsuario(btn.dataset.uid));
+    });
+  }
+
+  async function cargarInvitaciones() {
+    const snap = await getDocs(collection(db, 'invitaciones'));
+    invitaciones = snap.docs.map(d => ({ email: d.id, ...d.data() }));
+    const cuerpo = $('cuerpoInvitaciones');
+    cuerpo.innerHTML = '';
+    $('invitacionesVacio').classList.toggle('oculto', invitaciones.length > 0);
+    for (const inv of invitaciones) {
+      const fila = document.createElement('tr');
+      fila.innerHTML =
+        '<td class="sedes-mono">' + inv.email + '</td>' +
+        '<td>' + (inv.nombre || '—') + '</td>' +
+        '<td><span class="chip pendiente">' + (nombresRol[inv.rol] || inv.rol) + '</span></td>' +
+        '<td class="sedes-mono">' + ((inv.sucursales && inv.sucursales.length) ? inv.sucursales.join(', ') : '—') + '</td>' +
+        '<td><button class="enlace-accion peligro" data-email="' + inv.email + '">Revocar</button></td>';
+      cuerpo.appendChild(fila);
+    }
+    cuerpo.querySelectorAll('.enlace-accion').forEach(btn => {
+      btn.addEventListener('click', () => revocarInvitacion(btn.dataset.email));
+    });
+  }
+
+  // ───── formulario ─────
+  function pintarChecksSedes(seleccionadas) {
+    const contenedor = $('checksSedes');
+    contenedor.innerHTML = '';
+    if (sedes.length === 0) {
+      contenedor.innerHTML = '<span class="pista">Primero crea sucursales en el módulo de Configuración.</span>';
+      return;
+    }
+    for (const sede of sedes) {
+      const etiqueta = document.createElement('label');
+      etiqueta.className = 'check';
+      etiqueta.innerHTML = '<input type="checkbox" value="' + sede.id + '"' +
+        (seleccionadas.includes(sede.id) ? ' checked' : '') + '> ' + sede.id + ' · ' + (sede.nombre || '');
+      contenedor.appendChild(etiqueta);
+    }
+    contenedor.querySelectorAll('input').forEach(chk => {
+      chk.addEventListener('change', actualizarSedePrincipal);
+    });
+    actualizarSedePrincipal();
+  }
+
+  function sedesMarcadas() {
+    return Array.from($('checksSedes').querySelectorAll('input:checked')).map(c => c.value);
+  }
+
+  function actualizarSedePrincipal() {
+    const marcadas = sedesMarcadas();
+    const select = $('fSedePrincipal');
+    const valorActual = select.value;
+    select.innerHTML = marcadas.length
+      ? marcadas.map(c => '<option value="' + c + '">' + c + '</option>').join('')
+      : '<option value="">— Selecciona sedes primero —</option>';
+    if (marcadas.includes(valorActual)) select.value = valorActual;
+  }
+
+  $('fRol').addEventListener('change', () => {
+    $('campoRegistro').style.opacity = $('fRol').value === 'optometra' ? '1' : '.45';
+  });
+
+  function editarUsuario(uid) {
+    const u = usuarios.find(x => x.uid === uid);
+    if (!u) return;
+    $('editandoUid').value = uid;
+    $('fEmail').value = u.email || '';
+    $('fEmail').disabled = true;
+    $('fNombre').value = u.nombre || '';
+    $('fRol').value = u.rol || 'recepcionista';
+    $('fRegistro').value = u.registroProfesional || '';
+    pintarChecksSedes(u.sucursales || []);
+    setTimeout(() => { $('fSedePrincipal').value = u.sucursalPrincipal || ''; }, 0);
+    $('fEstado').value = u.estado || 'activo';
+    const esYo = uid === uidActual;
+    $('fRol').disabled = esYo;
+    $('fEstado').disabled = esYo;
+    $('tituloForm').textContent = 'Editar usuario: ' + (u.nombre || u.email);
+    $('subtituloForm').textContent = esYo
+      ? 'Tu propio rol y estado no se pueden modificar (protección contra bloqueo accidental)'
+      : 'Los cambios aplican de inmediato en el próximo uso del sistema';
+    $('btnGuardar').textContent = 'Guardar cambios';
+    $('btnCancelar').classList.remove('oculto');
+    $('fNombre').focus();
+  }
+
+  function limpiarFormulario() {
+    $('formUsuario').reset();
+    $('editandoUid').value = '';
+    $('fEmail').disabled = false;
+    $('fRol').disabled = false;
+    $('fEstado').disabled = false;
+    pintarChecksSedes([]);
+    $('tituloForm').textContent = 'Invitar nuevo usuario';
+    $('subtituloForm').textContent = 'El correo debe ser una cuenta de Google (Gmail o Workspace)';
+    $('btnGuardar').textContent = 'Crear invitación';
+    $('btnCancelar').classList.add('oculto');
+    $('campoRegistro').style.opacity = '.45';
+  }
+  $('btnCancelar').addEventListener('click', limpiarFormulario);
+  $('campoRegistro').style.opacity = '.45';
+
+  async function revocarInvitacion(email) {
+    if (!confirm('¿Revocar la invitación de ' + email + '? La persona no podrá activar su cuenta.')) return;
+    try {
+      await deleteDoc(doc(db, 'invitaciones', email));
+      await cargarInvitaciones();
+    } catch (e) {
+      alert('No se pudo revocar (' + (e.code || e.message) + ')');
+    }
+  }
+
+  $('formUsuario').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const msj = $('msjForm'), btn = $('btnGuardar');
+    msj.className = 'mensaje';
+
+    const editando = $('editandoUid').value;
+    const email = $('fEmail').value.trim().toLowerCase();
+    const nombre = $('fNombre').value.trim();
+    const rolElegido = $('fRol').value;
+    const marcadas = sedesMarcadas();
+
+    if (!editando && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      msj.classList.add('error'); msj.textContent = 'Escribe un correo válido.'; return;
+    }
+    if (!nombre) {
+      msj.classList.add('error'); msj.textContent = 'El nombre es obligatorio.'; return;
+    }
+    if (rolElegido !== 'superadmin' && marcadas.length === 0) {
+      msj.classList.add('error'); msj.textContent = 'Asigna al menos una sede (excepto para SuperAdmin).'; return;
+    }
+    if (rolElegido === 'optometra' && !$('fRegistro').value.trim()) {
+      msj.classList.add('error'); msj.textContent = 'El registro profesional es obligatorio para optómetras.'; return;
+    }
+    if (!editando && usuarios.some(u => (u.email || '').toLowerCase() === email)) {
+      msj.classList.add('error'); msj.textContent = 'Ya existe un usuario registrado con ese correo.'; return;
+    }
+    if (!editando && invitaciones.some(i => i.email === email)) {
+      msj.classList.add('error'); msj.textContent = 'Ya hay una invitación pendiente para ese correo.'; return;
+    }
+
+    msj.textContent = 'Guardando…'; btn.disabled = true;
+
+    try {
+      if (editando) {
+        const datos = {
+          nombre: nombre,
+          registroProfesional: $('fRegistro').value.trim(),
+          sucursales: marcadas,
+          sucursalPrincipal: $('fSedePrincipal').value || '',
+          modificadoPor: uidActual,
+          fechaModificacion: serverTimestamp()
+        };
+        if (!$('fRol').disabled) datos.rol = rolElegido;
+        if (!$('fEstado').disabled) datos.estado = $('fEstado').value;
+        await updateDoc(doc(db, 'usuarios', editando), datos);
+        msj.classList.add('ok'); msj.textContent = '✓ Usuario actualizado';
+        await cargarUsuarios();
+      } else {
+        await setDoc(doc(db, 'invitaciones', email), {
+          email: email,
+          nombre: nombre,
+          rol: rolElegido,
+          registroProfesional: $('fRegistro').value.trim(),
+          sucursales: marcadas,
+          sucursalPrincipal: $('fSedePrincipal').value || '',
+          creadoPor: uidActual,
+          fechaCreacion: serverTimestamp()
+        });
+        msj.classList.add('ok'); msj.textContent = '✓ Invitación creada para ' + email;
+        await cargarInvitaciones();
+      }
+      limpiarFormulario();
+    } catch (e) {
+      msj.classList.add('error');
+      msj.textContent = 'Error al guardar (' + (e.code || e.message) + ')';
+    }
+    btn.disabled = false;
+    setTimeout(() => { msj.textContent = ''; }, 4500);
+  });
+</script>
+
+</body>
+</html>
