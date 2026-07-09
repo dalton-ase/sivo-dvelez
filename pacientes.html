@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIVO — Pacientes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Lexend:wght@300;400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fondo:#F6F8F8;--superficie:#FFFFFF;--niebla:#E4EAEA;
+    --grafito:#171A1E;--gris:#5C666B;
+    --petroleo:#0C7268;--petroleo-oscuro:#0A5B53;--petroleo-tinte:#E3F2F0;
+    --violeta:#5B4FD8;--violeta-tinte:#EDEAFB;
+    --ambar:#B45309;--ambar-tinte:#FBEEDC;
+    --rojo:#C2362F;--rojo-tinte:#FAE7E5;
+    --exito:#12805C;--exito-tinte:#E5F5EC;
+    --flash:linear-gradient(90deg,#2FD9A8 0%,#4BB8D8 50%,#7C6CF0 100%);
+    --radio:12px;
+    --sombra:0 1px 2px rgba(23,26,30,.05),0 4px 16px rgba(23,26,30,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Lexend',sans-serif;background:var(--fondo);color:var(--grafito);min-height:100vh}
+  :focus-visible{outline:none;box-shadow:0 0 0 2px var(--superficie),0 0 0 4px var(--petroleo)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  .oculto{display:none!important}
+
+  header{background:var(--superficie);border-bottom:1px solid var(--niebla);padding:14px 28px;display:flex;align-items:center;gap:14px}
+  .lente{width:34px;height:34px;border-radius:50%;background:conic-gradient(from 210deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);display:grid;place-items:center;flex-shrink:0}
+  .lente::after{content:'';width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#2A3138 0%,#171A1E 60%)}
+  .wordmark{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 122,'wght' 800;font-size:1.2rem;letter-spacing:.04em;line-height:1}
+  .wordmark small{display:block;font-family:'Lexend';font-weight:400;font-size:.55rem;letter-spacing:.14em;color:var(--gris);text-transform:uppercase;margin-top:2px;font-variation-settings:normal}
+  .cabecera-derecha{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:.78rem;color:var(--gris)}
+  .cabecera-derecha strong{color:var(--grafito);font-weight:600}
+  .boton-secundario{background:var(--superficie);color:var(--gris);border:1px solid var(--niebla);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:'Lexend';font-size:.76rem;font-weight:500;transition:border-color .15s,color .15s;text-decoration:none}
+  .boton-secundario:hover{border-color:var(--gris);color:var(--grafito)}
+
+  main{max-width:1120px;margin:0 auto;padding:26px 24px 60px}
+  h1{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 700;font-size:1.55rem}
+  .titulo-fila{display:flex;align-items:center;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+  .subtitulo{font-size:.82rem;color:var(--gris);margin-left:auto}
+
+  .portal{max-width:420px;margin:60px auto;text-align:center;padding:0 20px}
+  .portal .lente{width:52px;height:52px;margin:0 auto 18px}.portal .lente::after{width:38px;height:38px}
+  .boton-google{display:inline-flex;align-items:center;justify-content:center;gap:11px;width:100%;padding:13px 20px;margin-top:22px;background:var(--petroleo);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Lexend';font-size:.92rem;font-weight:600}
+  .aviso-denegado{background:var(--rojo-tinte);color:var(--rojo);border:1px solid var(--rojo);border-radius:10px;padding:14px 16px;font-size:.84rem;margin-top:22px;line-height:1.5}
+
+  /* ═════ listado ═════ */
+  .barra-listado{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+  .buscar{flex:1;min-width:240px;display:flex;align-items:center;gap:9px;background:var(--superficie);border:1px solid var(--niebla);border-radius:10px;padding:8px 14px}
+  .buscar svg{width:15px;height:15px;color:var(--gris);flex-shrink:0}
+  .buscar input{flex:1;border:none;background:none;font-family:'Lexend';font-size:.86rem;color:var(--grafito);outline:none}
+  .contador{font-size:.72rem;color:var(--gris);font-family:'Spline Sans Mono',monospace}
+  .boton-principal{background:var(--petroleo);color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-family:'Lexend';font-size:.84rem;font-weight:600;transition:background .15s;display:inline-flex;align-items:center;gap:7px}
+  .boton-principal:hover{background:var(--petroleo-oscuro)}
+  .boton-principal:disabled{opacity:.55;cursor:wait}
+
+  .panel{background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:.84rem}
+  thead th{text-align:left;font-size:.64rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);padding:11px 22px;border-bottom:1px solid var(--niebla);background:var(--fondo)}
+  tbody td{padding:13px 22px;border-bottom:1px solid var(--niebla);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr{cursor:pointer;transition:background .12s}
+  tbody tr:hover{background:var(--fondo)}
+  .doc{font-family:'Spline Sans Mono',monospace;font-size:.76rem;color:var(--gris)}
+  .nombre-paciente{font-weight:500}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+  .chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+  .chip.menor{background:var(--ambar-tinte);color:var(--ambar)}
+  .chip.adulto{background:var(--petroleo-tinte);color:var(--petroleo-oscuro)}
+  .chip.firmado{background:var(--exito-tinte);color:var(--exito)}
+  .chip.sinfirma{background:var(--rojo-tinte);color:var(--rojo)}
+  .vacio{padding:40px 22px;text-align:center;color:var(--gris);font-size:.86rem}
+
+  /* ═════ modal ═════ */
+  .modal-fondo{position:fixed;inset:0;background:rgba(23,26,30,.45);display:grid;place-items:center;padding:20px;z-index:50}
+  .modal{background:var(--superficie);border-radius:var(--radio);box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:820px;max-height:calc(100vh - 40px);overflow-y:auto}
+  .modal-cabecera{position:sticky;top:0;background:var(--superficie);border-bottom:1px solid var(--niebla);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;z-index:5}
+  .modal-cabecera h2{font-size:1.05rem;font-weight:600}
+  .modal-cabecera p{font-size:.72rem;color:var(--gris);margin-top:2px}
+  .cerrar{background:none;border:none;font-size:1.4rem;color:var(--gris);cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px}
+  .cerrar:hover{background:var(--fondo);color:var(--grafito)}
+  .modal-cuerpo{padding:22px 24px}
+
+  .seccion{margin-bottom:24px}
+  .seccion-titulo{font-size:.74rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--niebla);display:flex;align-items:center;gap:8px}
+  .grilla{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grilla.tres{grid-template-columns:1fr 1fr 1fr}
+  .campo{display:flex;flex-direction:column;gap:4px}
+  .campo.ancho{grid-column:1 / -1}
+  .campo label{font-size:.66rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+  .campo input, .campo select, .campo textarea{font-family:'Lexend';font-size:.86rem;color:var(--grafito);background:var(--fondo);border:1px solid var(--niebla);border-radius:8px;padding:9px 11px;transition:border-color .15s}
+  .campo input.mono{font-family:'Spline Sans Mono',monospace;font-size:.82rem}
+  .campo input:focus, .campo select:focus, .campo textarea:focus{border-color:var(--petroleo);outline:none}
+  .campo .pista{font-size:.66rem;color:var(--gris);margin-top:2px}
+  .obligatorio::after{content:' *';color:var(--rojo)}
+
+  .aviso-menor{background:var(--ambar-tinte);color:var(--ambar);border:1px solid var(--ambar);border-radius:9px;padding:11px 14px;font-size:.78rem;margin-bottom:14px;display:flex;gap:9px;align-items:center;line-height:1.4}
+  .aviso-info{background:var(--petroleo-tinte);color:var(--petroleo-oscuro);border:1px solid var(--petroleo);border-radius:9px;padding:11px 14px;font-size:.78rem;margin-bottom:14px;line-height:1.4}
+  .aviso-firmado{background:var(--exito-tinte);color:var(--exito);border:1px solid var(--exito);border-radius:9px;padding:11px 14px;font-size:.78rem;margin-bottom:14px;line-height:1.5}
+
+  /* ═════ consentimiento ═════ */
+  .texto-legal{background:var(--fondo);border:1px solid var(--niebla);border-radius:9px;padding:14px 16px;max-height:220px;overflow-y:auto;font-size:.78rem;line-height:1.55;color:var(--grafito);white-space:pre-wrap}
+  .metodo-firma{display:flex;gap:8px;margin:14px 0}
+  .metodo-firma button{flex:1;background:var(--superficie);border:1px solid var(--niebla);color:var(--gris);border-radius:9px;padding:10px;font-family:'Lexend';font-size:.82rem;font-weight:500;cursor:pointer;transition:all .15s}
+  .metodo-firma button.activo{background:var(--petroleo-tinte);border-color:var(--petroleo);color:var(--petroleo-oscuro);font-weight:600}
+  .metodo-firma button:hover:not(.activo){background:var(--fondo)}
+
+  .caja-canvas{border:1px dashed var(--niebla);border-radius:9px;background:var(--superficie);position:relative;overflow:hidden}
+  .caja-canvas canvas{display:block;width:100%;height:180px;touch-action:none;cursor:crosshair}
+  .canvas-etiqueta{position:absolute;top:8px;left:12px;font-size:.66rem;color:var(--gris);pointer-events:none}
+  .canvas-acciones{display:flex;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--niebla);background:var(--fondo);font-size:.74rem}
+  .canvas-acciones button{background:none;border:none;color:var(--petroleo);font-family:'Lexend';font-size:.74rem;font-weight:600;cursor:pointer}
+
+  .caja-subir{border:1px dashed var(--niebla);border-radius:9px;padding:26px;text-align:center;background:var(--fondo)}
+  .caja-subir input{display:none}
+  .caja-subir label{display:inline-block;background:var(--superficie);border:1px solid var(--niebla);border-radius:8px;padding:9px 18px;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--grafito)}
+  .caja-subir label:hover{border-color:var(--petroleo);color:var(--petroleo)}
+  .caja-subir .archivo-nombre{margin-top:10px;font-size:.76rem;color:var(--gris);font-family:'Spline Sans Mono',monospace}
+  .caja-subir .pista{font-size:.68rem;color:var(--gris);margin-top:8px}
+
+  .historial-consent{border:1px solid var(--niebla);border-radius:9px}
+  .consent-item{padding:11px 14px;border-bottom:1px solid var(--niebla);display:flex;justify-content:space-between;align-items:center;font-size:.8rem}
+  .consent-item:last-child{border-bottom:none}
+  .consent-item .meta{color:var(--gris);font-size:.7rem;margin-top:2px}
+  .consent-item a{color:var(--petroleo);font-weight:600;font-size:.76rem;text-decoration:none}
+  .consent-item a:hover{text-decoration:underline}
+
+  .modal-pie{position:sticky;bottom:0;background:var(--superficie);border-top:1px solid var(--niebla);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .mensaje-form{font-size:.76rem;font-weight:500}
+  .mensaje-form.ok{color:var(--exito)}
+  .mensaje-form.error{color:var(--rojo)}
+  .acciones-pie{display:flex;gap:9px;margin-left:auto}
+  .peligro{color:var(--rojo)!important;border-color:var(--rojo)!important}
+
+  @media (max-width:640px){
+    .grilla, .grilla.tres{grid-template-columns:1fr}
+    main{padding:20px 14px 40px}
+    thead th, tbody td{padding-left:14px;padding-right:14px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═════════ PORTAL ═════════ -->
+<div class="portal oculto" id="portal">
+  <div class="lente" aria-hidden="true"></div>
+  <h1 class="wordmark" style="font-size:2rem">SIVO<small>Visión Óptica Integral</small></h1>
+  <p style="font-size:.85rem;color:var(--gris);margin:16px 0 20px;line-height:1.5">Módulo de Pacientes.<br>Inicia sesión para acceder.</p>
+  <button class="boton-google" id="btnEntrar">Entrar con Google</button>
+  <div class="aviso-denegado oculto" id="avisoDenegado"></div>
+</div>
+
+<!-- ═════════ APP ═════════ -->
+<div id="app" class="oculto">
+  <header>
+    <div class="lente" aria-hidden="true"></div>
+    <div class="wordmark">SIVO<small>Pacientes</small></div>
+    <div class="cabecera-derecha">
+      <span><strong id="usuarioNombre"></strong> · <span id="usuarioRol"></span></span>
+      <a href="index.html" class="boton-secundario">← Tablero</a>
+      <button class="boton-secundario" id="btnSalir">Salir</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="titulo-fila">
+      <h1>Pacientes</h1>
+      <span class="subtitulo">Registro clínico único · datos globales de toda la red</span>
+    </div>
+
+    <div class="barra-listado">
+      <div class="buscar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="buscador" placeholder="Buscar por documento, nombre o apellido…" autocomplete="off">
+      </div>
+      <span class="contador" id="contador">0 pacientes</span>
+      <button class="boton-principal" id="btnNuevo">+ Nuevo paciente</button>
+    </div>
+
+    <div class="panel">
+      <table>
+        <thead>
+          <tr><th>Documento</th><th>Nombre</th><th>Edad</th><th>Teléfono</th><th>Consentimiento</th><th>Registro</th></tr>
+        </thead>
+        <tbody id="cuerpoTabla"></tbody>
+      </table>
+      <div class="vacio oculto" id="tablaVacia">Aún no hay pacientes registrados. Crea el primero con el botón "Nuevo paciente".</div>
+    </div>
+  </main>
+</div>
+
+<!-- ═════════ MODAL PACIENTE ═════════ -->
+<div class="modal-fondo oculto" id="modalFondo">
+  <div class="modal" role="dialog" aria-labelledby="modalTitulo">
+    <div class="modal-cabecera">
+      <div>
+        <h2 id="modalTitulo">Nuevo paciente</h2>
+        <p id="modalSubtitulo">Datos administrativos e identificación</p>
+      </div>
+      <button class="cerrar" id="btnCerrar" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div class="modal-cuerpo">
+      <form id="formPaciente">
+        <input type="hidden" id="pacienteId">
+
+        <!-- ───── identificación ───── -->
+        <div class="seccion">
+          <div class="seccion-titulo">Identificación</div>
+          <div class="grilla tres">
+            <div class="campo">
+              <label class="obligatorio" for="fTipoDoc">Tipo de documento</label>
+              <select id="fTipoDoc">
+                <option value="CC">Cédula de Ciudadanía</option>
+                <option value="TI">Tarjeta de Identidad</option>
+                <option value="RC">Registro Civil</option>
+                <option value="CE">Cédula de Extranjería</option>
+                <option value="PA">Pasaporte</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label class="obligatorio" for="fNumDoc">Número</label>
+              <input type="text" id="fNumDoc" class="mono">
+            </div>
+            <div class="campo">
+              <label class="obligatorio" for="fFechaNac">Fecha de nacimiento</label>
+              <input type="date" id="fFechaNac" class="mono">
+              <span class="pista" id="pistaEdad"></span>
+            </div>
+            <div class="campo">
+              <label class="obligatorio" for="fNombres">Nombres</label>
+              <input type="text" id="fNombres">
+            </div>
+            <div class="campo">
+              <label class="obligatorio" for="fApellidos">Apellidos</label>
+              <input type="text" id="fApellidos">
+            </div>
+            <div class="campo">
+              <label for="fGenero">Género</label>
+              <select id="fGenero">
+                <option value="">— Sin especificar —</option>
+                <option value="femenino">Femenino</option>
+                <option value="masculino">Masculino</option>
+                <option value="otro">Otro</option>
+                <option value="no_declara">No declara</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ───── acudiente (menores) ───── -->
+        <div class="seccion oculto" id="seccionMenor">
+          <div class="aviso-menor">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+            <span><strong>Paciente menor de edad.</strong> El consentimiento debe ser firmado por el acudiente responsable.</span>
+          </div>
+          <div class="seccion-titulo">Acudiente / Tutor legal</div>
+          <div class="grilla tres">
+            <div class="campo">
+              <label class="obligatorio" for="fAcuTipoDoc">Tipo de documento</label>
+              <select id="fAcuTipoDoc">
+                <option value="CC">Cédula de Ciudadanía</option>
+                <option value="CE">Cédula de Extranjería</option>
+                <option value="PA">Pasaporte</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label class="obligatorio" for="fAcuNumDoc">Número</label>
+              <input type="text" id="fAcuNumDoc" class="mono">
+            </div>
+            <div class="campo">
+              <label for="fAcuParentesco">Parentesco</label>
+              <select id="fAcuParentesco">
+                <option value="madre">Madre</option>
+                <option value="padre">Padre</option>
+                <option value="abuelo">Abuelo/a</option>
+                <option value="tio">Tío/a</option>
+                <option value="tutor">Tutor legal</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label class="obligatorio" for="fAcuNombres">Nombres</label>
+              <input type="text" id="fAcuNombres">
+            </div>
+            <div class="campo">
+              <label class="obligatorio" for="fAcuApellidos">Apellidos</label>
+              <input type="text" id="fAcuApellidos">
+            </div>
+            <div class="campo">
+              <label for="fAcuTelefono">Teléfono del acudiente</label>
+              <input type="tel" id="fAcuTelefono" class="mono">
+            </div>
+          </div>
+        </div>
+
+        <!-- ───── contacto ───── -->
+        <div class="seccion">
+          <div class="seccion-titulo">Contacto y ubicación</div>
+          <div class="grilla">
+            <div class="campo">
+              <label class="obligatorio" for="fTelefono">Teléfono</label>
+              <input type="tel" id="fTelefono" class="mono">
+            </div>
+            <div class="campo">
+              <label for="fWhatsapp">WhatsApp</label>
+              <input type="tel" id="fWhatsapp" class="mono">
+              <span class="pista">Si es el mismo que el teléfono, déjalo en blanco</span>
+            </div>
+            <div class="campo">
+              <label for="fEmail">Correo electrónico</label>
+              <input type="email" id="fEmail">
+            </div>
+            <div class="campo">
+              <label for="fOcupacion">Ocupación</label>
+              <input type="text" id="fOcupacion">
+            </div>
+            <div class="campo ancho">
+              <label for="fDireccion">Dirección</label>
+              <input type="text" id="fDireccion">
+            </div>
+            <div class="campo">
+              <label for="fCiudad">Ciudad</label>
+              <input type="text" id="fCiudad">
+            </div>
+            <div class="campo">
+              <label for="fEps">EPS / Aseguradora</label>
+              <input type="text" id="fEps">
+            </div>
+          </div>
+        </div>
+
+        <!-- ───── contacto de emergencia ───── -->
+        <div class="seccion">
+          <div class="seccion-titulo">Contacto de emergencia</div>
+          <div class="grilla tres">
+            <div class="campo">
+              <label for="fEmerNombre">Nombre completo</label>
+              <input type="text" id="fEmerNombre">
+            </div>
+            <div class="campo">
+              <label for="fEmerTelefono">Teléfono</label>
+              <input type="tel" id="fEmerTelefono" class="mono">
+            </div>
+            <div class="campo">
+              <label for="fEmerParentesco">Parentesco</label>
+              <input type="text" id="fEmerParentesco">
+            </div>
+          </div>
+        </div>
+
+        <!-- ───── consentimiento ───── -->
+        <div class="seccion" id="seccionConsent">
+          <div class="seccion-titulo">Consentimiento informado (Ley 1581 de 2012)</div>
+          <div id="consentContenedor"></div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-pie">
+      <span class="mensaje-form" id="msjForm" role="status"></span>
+      <div class="acciones-pie">
+        <button type="button" class="boton-secundario oculto peligro" id="btnArchivarAcudiente">Archivar datos de acudiente</button>
+        <button type="button" class="boton-secundario" id="btnCancelar">Cancelar</button>
+        <button type="button" class="boton-principal" id="btnGuardar">Guardar paciente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc,
+           collection, getDocs, query, orderBy, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdUihN1s_SqdKEJAoobOkOjQmVVk0foyQ",
+    authDomain: "sivo-dvelez.firebaseapp.com",
+    projectId: "sivo-dvelez",
+    storageBucket: "sivo-dvelez.firebasestorage.app",
+    messagingSenderId: "686206424202",
+    appId: "1:686206424202:web:e6fc32b40c7183ea108973"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+  const proveedor = new GoogleAuthProvider();
+
+  const $ = (id) => document.getElementById(id);
+  const nombresRol = {
+    superadmin: 'Súper Administrador', admin_sucursal: 'Admin de Sucursal',
+    optometra: 'Optómetra', recepcionista: 'Recepcionista', tecnico_lab: 'Técnico Lab.'
+  };
+  const nombresParentesco = {
+    madre: 'Madre', padre: 'Padre', abuelo: 'Abuelo/a', tio: 'Tío/a',
+    tutor: 'Tutor legal', otro: 'Otro'
+  };
+  const TEXTO_LEGAL_DEFECTO =
+`AUTORIZACIÓN DE TRATAMIENTO DE DATOS PERSONALES Y CONSENTIMIENTO INFORMADO
+
+En cumplimiento de la Ley 1581 de 2012, el Decreto 1377 de 2013, la Resolución 1995 de 1999 y demás normas concordantes de la República de Colombia, autorizo de manera libre, previa, expresa e informada a la empresa responsable de este establecimiento (en adelante, "la Óptica") para que recolecte, almacene, use, circule, actualice, suprima y trate mis datos personales y de salud con las siguientes finalidades:
+
+1. Registrar mi historia clínica optométrica y los datos administrativos requeridos para la prestación del servicio.
+2. Facturar y cobrar los servicios y productos ópticos que adquiera.
+3. Contactarme por vía telefónica, correo electrónico, SMS o WhatsApp para recordatorios de citas, entrega de productos, seguimientos post-venta, avisos de recall anual y comunicaciones asistenciales.
+4. Compartir mi fórmula óptica con laboratorios propios o externos aliados, exclusivamente para la elaboración de los lentes prescritos.
+5. Cumplir con obligaciones legales, contables, tributarias y sanitarias.
+
+Declaro que se me ha informado que:
+• Mis datos de salud son datos sensibles y su tratamiento requiere mi consentimiento explícito.
+• Puedo conocer, actualizar, rectificar y solicitar la supresión de mis datos en cualquier momento, así como revocar esta autorización.
+• Mi historia clínica es un documento sujeto a reserva y solo será accesible al personal autorizado.
+• Los canales para ejercer mis derechos son los datos de contacto de la Óptica exhibidos en establecimiento y documentos institucionales.
+
+He tenido la oportunidad de aclarar mis dudas y acepto de manera voluntaria los términos anteriores.`;
+
+  let perfilActual = null;
+  let pacientes = [];
+  let editando = null;
+  let textoLegalActual = TEXTO_LEGAL_DEFECTO;
+  let versionTextoActual = 'plantilla-inicial';
+
+  // ═════ acceso ═════
+  $('btnEntrar').addEventListener('click', async () => {
+    $('avisoDenegado').classList.add('oculto');
+    try { await signInWithPopup(auth, proveedor); }
+    catch (e) {
+      $('avisoDenegado').textContent = 'No se pudo iniciar sesión (' + e.code + ').';
+      $('avisoDenegado').classList.remove('oculto');
+    }
+  });
+  $('btnSalir').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (usuario) => {
+    if (!usuario) {
+      $('portal').classList.remove('oculto');
+      $('app').classList.add('oculto');
+      return;
+    }
+    try {
+      const perfil = await getDoc(doc(db, 'usuarios', usuario.uid));
+      if (perfil.exists() && perfil.data().estado === 'activo'
+          && perfil.data().rol !== 'tecnico_lab') {
+        perfilActual = { uid: usuario.uid, ...perfil.data() };
+        $('usuarioNombre').textContent = perfilActual.nombre || '';
+        $('usuarioRol').textContent = nombresRol[perfilActual.rol] || perfilActual.rol;
+        $('portal').classList.add('oculto');
+        $('app').classList.remove('oculto');
+        await cargarTextoLegal();
+        await cargarPacientes();
+      } else {
+        denegar('Tu cuenta no tiene permiso para ver el módulo de Pacientes.');
+      }
+    } catch (e) {
+      denegar('Acceso denegado: esta cuenta no está autorizada en SIVO.');
+    }
+  });
+  function denegar(msj) {
+    signOut(auth);
+    $('avisoDenegado').textContent = msj;
+    $('avisoDenegado').classList.remove('oculto');
+    $('portal').classList.remove('oculto');
+    $('app').classList.add('oculto');
+  }
+
+  // ═════ plantilla de consentimiento ═════
+  async function cargarTextoLegal() {
+    try {
+      const snap = await getDoc(doc(db, 'configuracion', 'consentimiento'));
+      if (snap.exists() && snap.data().textoActual) {
+        textoLegalActual = snap.data().textoActual;
+        versionTextoActual = snap.data().version || 'personalizada';
+      }
+    } catch { /* plantilla por defecto */ }
+  }
+
+  // ═════ carga y listado ═════
+  async function cargarPacientes() {
+    try {
+      const snap = await getDocs(query(collection(db, 'pacientes'), orderBy('apellidos')));
+      pacientes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (e) {
+      pacientes = [];
+    }
+    pintarTabla(pacientes);
+  }
+
+  function edadDesde(fechaNacIso) {
+    if (!fechaNacIso) return null;
+    const nac = new Date(fechaNacIso);
+    if (isNaN(nac)) return null;
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+    return edad;
+  }
+
+  function pintarTabla(lista) {
+    const cuerpo = $('cuerpoTabla');
+    cuerpo.innerHTML = '';
+    $('tablaVacia').classList.toggle('oculto', lista.length > 0);
+    $('contador').textContent = lista.length + ' paciente' + (lista.length === 1 ? '' : 's');
+    for (const p of lista) {
+      const edad = edadDesde(p.fechaNacimiento);
+      const esMenor = edad !== null && edad < 18;
+      const consentimientoOk = p.consentimiento && p.consentimiento.firmado;
+      const fila = document.createElement('tr');
+      fila.innerHTML =
+        '<td><span class="doc">' + (p.tipoDocumento || '') + ' ' + (p.numeroDocumento || '') + '</span></td>' +
+        '<td><span class="nombre-paciente">' + (p.apellidos || '') + ', ' + (p.nombres || '') + '</span></td>' +
+        '<td>' + (edad !== null ? edad + ' años ' + (esMenor ? '<span class="chip menor">Menor</span>' : '<span class="chip adulto">Adulto</span>') : '—') + '</td>' +
+        '<td class="doc">' + (p.telefono || '—') + '</td>' +
+        '<td>' + (consentimientoOk
+          ? '<span class="chip firmado">Firmado</span>'
+          : '<span class="chip sinfirma">Pendiente</span>') + '</td>' +
+        '<td class="doc">' + (p.sucursalRegistro || '—') + '</td>';
+      fila.addEventListener('click', () => abrirModal(p.id));
+      cuerpo.appendChild(fila);
+    }
+  }
+
+  $('buscador').addEventListener('input', (ev) => {
+    const t = ev.target.value.trim().toLowerCase();
+    if (!t) return pintarTabla(pacientes);
+    pintarTabla(pacientes.filter(p =>
+      (p.numeroDocumento || '').toLowerCase().includes(t)
+      || (p.nombres || '').toLowerCase().includes(t)
+      || (p.apellidos || '').toLowerCase().includes(t)
+    ));
+  });
+
+  // ═════ modal ═════
+  $('btnNuevo').addEventListener('click', () => abrirModal(null));
+  $('btnCerrar').addEventListener('click', cerrarModal);
+  $('btnCancelar').addEventListener('click', cerrarModal);
+
+  function cerrarModal() {
+    $('modalFondo').classList.add('oculto');
+    editando = null;
+    document.body.style.overflow = '';
+  }
+
+  async function abrirModal(id) {
+    editando = id;
+    document.body.style.overflow = 'hidden';
+    $('formPaciente').reset();
+    $('pacienteId').value = '';
+    $('msjForm').textContent = '';
+    $('msjForm').className = 'mensaje-form';
+    $('btnArchivarAcudiente').classList.add('oculto');
+    $('seccionMenor').classList.add('oculto');
+
+    if (id) {
+      const p = pacientes.find(x => x.id === id);
+      if (!p) return;
+      $('modalTitulo').textContent = p.nombres + ' ' + p.apellidos;
+      $('modalSubtitulo').textContent = p.tipoDocumento + ' ' + p.numeroDocumento;
+      $('pacienteId').value = id;
+      $('fTipoDoc').value = p.tipoDocumento || 'CC';
+      $('fNumDoc').value = p.numeroDocumento || '';
+      $('fFechaNac').value = p.fechaNacimiento || '';
+      $('fNombres').value = p.nombres || '';
+      $('fApellidos').value = p.apellidos || '';
+      $('fGenero').value = p.genero || '';
+      $('fTelefono').value = p.telefono || '';
+      $('fWhatsapp').value = p.whatsapp || '';
+      $('fEmail').value = p.email || '';
+      $('fOcupacion').value = p.ocupacion || '';
+      $('fDireccion').value = p.direccion || '';
+      $('fCiudad').value = p.ciudad || '';
+      $('fEps').value = p.eps || '';
+      if (p.contactoEmergencia) {
+        $('fEmerNombre').value = p.contactoEmergencia.nombre || '';
+        $('fEmerTelefono').value = p.contactoEmergencia.telefono || '';
+        $('fEmerParentesco').value = p.contactoEmergencia.parentesco || '';
+      }
+      if (p.acudiente) {
+        $('fAcuTipoDoc').value = p.acudiente.tipoDocumento || 'CC';
+        $('fAcuNumDoc').value = p.acudiente.numeroDocumento || '';
+        $('fAcuNombres').value = p.acudiente.nombres || '';
+        $('fAcuApellidos').value = p.acudiente.apellidos || '';
+        $('fAcuParentesco').value = p.acudiente.parentesco || 'madre';
+        $('fAcuTelefono').value = p.acudiente.telefono || '';
+      }
+    } else {
+      $('modalTitulo').textContent = 'Nuevo paciente';
+      $('modalSubtitulo').textContent = 'Datos administrativos e identificación';
+    }
+    actualizarEdadYSecciones();
+    await renderConsentimiento();
+    $('modalFondo').classList.remove('oculto');
+  }
+
+  $('fFechaNac').addEventListener('change', () => {
+    actualizarEdadYSecciones();
+    renderConsentimiento();
+  });
+
+  function actualizarEdadYSecciones() {
+    const edad = edadDesde($('fFechaNac').value);
+    const esMenor = edad !== null && edad < 18;
+    if (edad !== null) {
+      $('pistaEdad').textContent = edad + ' años · ' + (esMenor ? 'Menor de edad' : 'Adulto');
+    } else {
+      $('pistaEdad').textContent = '';
+    }
+    $('seccionMenor').classList.toggle('oculto', !esMenor);
+
+    // Botón "archivar acudiente" para pacientes que ya son adultos
+    // pero tienen datos de acudiente en la base
+    if (editando && !esMenor) {
+      const p = pacientes.find(x => x.id === editando);
+      if (p && p.acudiente && !p.acudienteHistorico) {
+        $('btnArchivarAcudiente').classList.remove('oculto');
+      }
+    }
+  }
+
+  $('btnArchivarAcudiente').addEventListener('click', async () => {
+    if (!editando) return;
+    if (!confirm('¿Archivar los datos del acudiente? Se guardarán en el histórico pero dejarán de mostrarse en la ficha activa. Podrás restaurarlos manualmente si es necesario.')) return;
+    const p = pacientes.find(x => x.id === editando);
+    if (!p || !p.acudiente) return;
+    try {
+      await updateDoc(doc(db, 'pacientes', editando), {
+        acudienteHistorico: {
+          ...p.acudiente,
+          fechaArchivo: new Date().toISOString(),
+          archivadoPor: perfilActual.uid
+        },
+        acudiente: null,
+        modificadoPor: perfilActual.uid,
+        fechaModificacion: serverTimestamp()
+      });
+      await cargarPacientes();
+      cerrarModal();
+    } catch (e) {
+      alert('No se pudo archivar: ' + (e.code || e.message));
+    }
+  });
+
+  // ═════ consentimiento ═════
+  let metodoFirma = 'canvas';
+  let canvasFirma = null;
+  let archivoPDF = null;
+  let hayFirma = false;
+
+  async function renderConsentimiento() {
+    const p = editando ? pacientes.find(x => x.id === editando) : null;
+    const consentimientos = p ? (await cargarConsentimientos(editando)) : [];
+    const yaFirmado = p && p.consentimiento && p.consentimiento.firmado;
+    const cont = $('consentContenedor');
+    const edad = edadDesde($('fFechaNac').value);
+    const esMenor = edad !== null && edad < 18;
+    const quienFirma = esMenor ? 'el acudiente' : 'el paciente';
+
+    let html = '';
+    if (yaFirmado) {
+      html += '<div class="aviso-firmado">';
+      html += '<strong>✓ Consentimiento vigente firmado.</strong> ';
+      html += 'Firmado el ' + fechaCorta(p.consentimiento.fecha) + ' por ' + p.consentimiento.firmadoPor + '.';
+      html += ' Ley 1995/1999 impide modificar registros firmados; si necesitas una nueva versión, agrégala abajo.';
+      html += '</div>';
+    }
+    if (consentimientos.length > 0) {
+      html += '<div class="seccion-titulo" style="margin-top:14px;border:none">Historial de consentimientos</div>';
+      html += '<div class="historial-consent">';
+      for (const c of consentimientos) {
+        html += '<div class="consent-item"><div>';
+        html += '<div><strong>' + (c.tipo === 'canvas' ? 'Firma digital' : 'PDF firmado') + '</strong> · v' + (c.versionTexto || '—') + '</div>';
+        html += '<div class="meta">' + fechaCorta(c.fecha) + ' · Capturado por ' + (c.capturadoPor || '—');
+        if (c.firmadoPor) html += ' · Firmó: ' + c.firmadoPor;
+        html += '</div></div>';
+        if (c.archivoURL) html += '<a href="' + c.archivoURL + '" target="_blank" rel="noopener">Ver ↗</a>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    html += '<div class="aviso-info" style="margin-top:14px">';
+    html += '<strong>' + (yaFirmado ? 'Agregar nueva versión del consentimiento' : 'Capturar consentimiento') + '.</strong> ';
+    html += 'Firma ' + quienFirma + ' después de leer el texto legal vigente.';
+    html += '</div>';
+    html += '<div class="texto-legal" id="textoLegal">' + textoLegalActual + '</div>';
+    html += '<div class="metodo-firma">';
+    html += '<button type="button" data-metodo="canvas" class="activo">✍ Firmar en pantalla</button>';
+    html += '<button type="button" data-metodo="pdf">📄 Subir PDF firmado</button>';
+    html += '</div>';
+    html += '<div id="areaCanvas"><div class="caja-canvas"><span class="canvas-etiqueta">Firma aquí</span><canvas id="canvasFirma"></canvas></div>';
+    html += '<div class="canvas-acciones"><span id="canvasEstado">Sin firma</span><button type="button" id="btnLimpiarCanvas">Borrar</button></div></div>';
+    html += '<div id="areaPDF" class="oculto"><div class="caja-subir">';
+    html += '<label for="inputPDF">Seleccionar archivo</label>';
+    html += '<input type="file" id="inputPDF" accept="application/pdf,image/*">';
+    html += '<div class="archivo-nombre" id="nombreArchivo">Ningún archivo seleccionado</div>';
+    html += '<div class="pista">PDF o imagen · máx. 5 MB</div>';
+    html += '</div></div>';
+    html += '<div class="grilla" style="margin-top:14px">';
+    html += '<div class="campo"><label for="fFirmante">Nombre de quien firma</label><input type="text" id="fFirmante" placeholder="' + (esMenor ? 'Nombre del acudiente' : 'Nombre del paciente') + '"></div>';
+    html += '<div class="campo"><label for="fFirmanteDoc">Documento de quien firma</label><input type="text" id="fFirmanteDoc" class="mono"></div>';
+    html += '</div>';
+
+    cont.innerHTML = html;
+
+    // configurar canvas
+    canvasFirma = $('canvasFirma');
+    prepararCanvas();
+    archivoPDF = null;
+    hayFirma = false;
+
+    cont.querySelectorAll('.metodo-firma button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        metodoFirma = btn.dataset.metodo;
+        cont.querySelectorAll('.metodo-firma button').forEach(b => b.classList.toggle('activo', b === btn));
+        $('areaCanvas').classList.toggle('oculto', metodoFirma !== 'canvas');
+        $('areaPDF').classList.toggle('oculto', metodoFirma !== 'pdf');
+      });
+    });
+    $('btnLimpiarCanvas').addEventListener('click', limpiarCanvas);
+    $('inputPDF').addEventListener('change', (ev) => {
+      const f = ev.target.files[0];
+      if (!f) { archivoPDF = null; $('nombreArchivo').textContent = 'Ningún archivo seleccionado'; return; }
+      if (f.size > 5 * 1024 * 1024) {
+        alert('El archivo supera 5 MB. Reduce el tamaño e intenta de nuevo.');
+        ev.target.value = ''; return;
+      }
+      archivoPDF = f;
+      $('nombreArchivo').textContent = f.name + ' (' + Math.round(f.size / 1024) + ' KB)';
+    });
+
+    // autocompletar firmante
+    if (esMenor) {
+      $('fFirmante').value = ($('fAcuNombres').value + ' ' + $('fAcuApellidos').value).trim();
+      $('fFirmanteDoc').value = $('fAcuNumDoc').value;
+    } else {
+      $('fFirmante').value = ($('fNombres').value + ' ' + $('fApellidos').value).trim();
+      $('fFirmanteDoc').value = $('fNumDoc').value;
+    }
+  }
+
+  async function cargarConsentimientos(pacienteId) {
+    try {
+      const snap = await getDocs(collection(db, 'pacientes', pacienteId, 'consentimientos'));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                      .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+    } catch { return []; }
+  }
+
+  function prepararCanvas() {
+    if (!canvasFirma) return;
+    const ctx = canvasFirma.getContext('2d');
+    const ancho = canvasFirma.offsetWidth || 600;
+    canvasFirma.width = ancho * 2;
+    canvasFirma.height = 180 * 2;
+    ctx.scale(2, 2);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#171A1E';
+    ctx.lineWidth = 1.8;
+
+    let dibujando = false;
+    let ultX = 0, ultY = 0;
+    function coords(ev) {
+      const r = canvasFirma.getBoundingClientRect();
+      const t = ev.touches ? ev.touches[0] : ev;
+      return { x: t.clientX - r.left, y: t.clientY - r.top };
+    }
+    function iniciar(ev) {
+      ev.preventDefault();
+      dibujando = true;
+      const c = coords(ev); ultX = c.x; ultY = c.y;
+    }
+    function trazar(ev) {
+      if (!dibujando) return;
+      ev.preventDefault();
+      const c = coords(ev);
+      ctx.beginPath();
+      ctx.moveTo(ultX, ultY);
+      ctx.lineTo(c.x, c.y);
+      ctx.stroke();
+      ultX = c.x; ultY = c.y;
+      hayFirma = true;
+      $('canvasEstado').textContent = 'Firma capturada';
+    }
+    function terminar() { dibujando = false; }
+    canvasFirma.addEventListener('mousedown', iniciar);
+    canvasFirma.addEventListener('mousemove', trazar);
+    canvasFirma.addEventListener('mouseup', terminar);
+    canvasFirma.addEventListener('mouseleave', terminar);
+    canvasFirma.addEventListener('touchstart', iniciar);
+    canvasFirma.addEventListener('touchmove', trazar);
+    canvasFirma.addEventListener('touchend', terminar);
+  }
+
+  function limpiarCanvas() {
+    if (!canvasFirma) return;
+    const ctx = canvasFirma.getContext('2d');
+    ctx.clearRect(0, 0, canvasFirma.width, canvasFirma.height);
+    hayFirma = false;
+    $('canvasEstado').textContent = 'Sin firma';
+  }
+
+  function fechaCorta(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+  }
+
+  // ═════ guardado ═════
+  $('btnGuardar').addEventListener('click', guardar);
+
+  async function guardar() {
+    const msj = $('msjForm');
+    msj.className = 'mensaje-form';
+
+    // validaciones básicas
+    const req = ['fTipoDoc','fNumDoc','fFechaNac','fNombres','fApellidos','fTelefono'];
+    for (const id of req) {
+      if (!$(id).value.trim()) {
+        msj.classList.add('error'); msj.textContent = 'Faltan campos obligatorios.';
+        $(id).focus(); return;
+      }
+    }
+    const edad = edadDesde($('fFechaNac').value);
+    if (edad === null || edad < 0 || edad > 120) {
+      msj.classList.add('error'); msj.textContent = 'Fecha de nacimiento inválida.'; return;
+    }
+    const esMenor = edad < 18;
+    if (esMenor) {
+      for (const id of ['fAcuTipoDoc','fAcuNumDoc','fAcuNombres','fAcuApellidos']) {
+        if (!$(id).value.trim()) {
+          msj.classList.add('error'); msj.textContent = 'Los datos del acudiente son obligatorios para menores.';
+          $(id).focus(); return;
+        }
+      }
+    }
+
+    // duplicados por documento
+    const numDoc = $('fNumDoc').value.trim();
+    const tipoDoc = $('fTipoDoc').value;
+    const duplicado = pacientes.find(p => p.numeroDocumento === numDoc
+      && p.tipoDocumento === tipoDoc && p.id !== editando);
+    if (duplicado) {
+      msj.classList.add('error');
+      msj.textContent = 'Ya existe un paciente con ' + tipoDoc + ' ' + numDoc + ': ' + duplicado.nombres + ' ' + duplicado.apellidos;
+      return;
+    }
+
+    // ¿hay intento de firma nueva?
+    const firmante = $('fFirmante') ? $('fFirmante').value.trim() : '';
+    const firmanteDoc = $('fFirmanteDoc') ? $('fFirmanteDoc').value.trim() : '';
+    const intentoFirmaCanvas = metodoFirma === 'canvas' && hayFirma;
+    const intentoFirmaPDF = metodoFirma === 'pdf' && archivoPDF;
+    const intentoFirma = intentoFirmaCanvas || intentoFirmaPDF;
+
+    if (intentoFirma && !firmante) {
+      msj.classList.add('error'); msj.textContent = 'Escribe el nombre de quien firma.';
+      return;
+    }
+
+    $('btnGuardar').disabled = true;
+    msj.textContent = 'Guardando…';
+
+    try {
+      // 1. datos del paciente
+      const datos = {
+        tipoDocumento: tipoDoc,
+        numeroDocumento: numDoc,
+        nombres: $('fNombres').value.trim(),
+        apellidos: $('fApellidos').value.trim(),
+        fechaNacimiento: $('fFechaNac').value,
+        genero: $('fGenero').value,
+        telefono: $('fTelefono').value.trim(),
+        whatsapp: $('fWhatsapp').value.trim() || $('fTelefono').value.trim(),
+        email: $('fEmail').value.trim(),
+        ocupacion: $('fOcupacion').value.trim(),
+        direccion: $('fDireccion').value.trim(),
+        ciudad: $('fCiudad').value.trim(),
+        eps: $('fEps').value.trim(),
+        contactoEmergencia: {
+          nombre: $('fEmerNombre').value.trim(),
+          telefono: $('fEmerTelefono').value.trim(),
+          parentesco: $('fEmerParentesco').value.trim()
+        },
+        acudiente: esMenor ? {
+          tipoDocumento: $('fAcuTipoDoc').value,
+          numeroDocumento: $('fAcuNumDoc').value.trim(),
+          nombres: $('fAcuNombres').value.trim(),
+          apellidos: $('fAcuApellidos').value.trim(),
+          parentesco: $('fAcuParentesco').value,
+          telefono: $('fAcuTelefono').value.trim()
+        } : null,
+        modificadoPor: perfilActual.uid,
+        fechaModificacion: serverTimestamp()
+      };
+
+      let pacienteId = editando;
+      if (!pacienteId) {
+        datos.sucursalRegistro = perfilActual.sucursalPrincipal || '';
+        datos.estadoCiclo = 'registrado';
+        datos.creadoPor = perfilActual.uid;
+        datos.fechaCreacion = serverTimestamp();
+        const nuevo = await addDoc(collection(db, 'pacientes'), datos);
+        pacienteId = nuevo.id;
+      } else {
+        await updateDoc(doc(db, 'pacientes', pacienteId), datos);
+      }
+
+      // 2. consentimiento (si hay intento)
+      if (intentoFirma) {
+        let archivoURL = '', tipo = 'canvas';
+        if (intentoFirmaCanvas) {
+          const blob = await new Promise(res => canvasFirma.toBlob(res, 'image/png'));
+          const nombre = 'firma-' + Date.now() + '.png';
+          const refFirma = ref(storage, 'firmas/' + pacienteId + '/' + nombre);
+          await uploadBytes(refFirma, blob);
+          archivoURL = await getDownloadURL(refFirma);
+          tipo = 'canvas';
+        } else {
+          const nombre = Date.now() + '-' + archivoPDF.name.replace(/[^\w.-]/g, '_');
+          const refPDF = ref(storage, 'consentimientos/' + pacienteId + '/' + nombre);
+          await uploadBytes(refPDF, archivoPDF);
+          archivoURL = await getDownloadURL(refPDF);
+          tipo = 'pdf';
+        }
+
+        const consData = {
+          fecha: new Date().toISOString(),
+          tipo: tipo,
+          textoFirmado: textoLegalActual,
+          versionTexto: versionTextoActual,
+          firmadoPor: firmante,
+          firmadoPorDocumento: firmanteDoc,
+          esAcudiente: esMenor,
+          archivoURL: archivoURL,
+          capturadoPor: perfilActual.nombre || perfilActual.uid,
+          capturadoPorUid: perfilActual.uid,
+          sucursal: perfilActual.sucursalPrincipal || ''
+        };
+        await addDoc(collection(db, 'pacientes', pacienteId, 'consentimientos'), consData);
+
+        // marca en el paciente (última firma vigente)
+        await updateDoc(doc(db, 'pacientes', pacienteId), {
+          consentimiento: {
+            firmado: true,
+            fecha: consData.fecha,
+            firmadoPor: firmante,
+            versionTexto: versionTextoActual
+          }
+        });
+      }
+
+      msj.classList.add('ok');
+      msj.textContent = '✓ Guardado';
+      await cargarPacientes();
+      setTimeout(cerrarModal, 900);
+    } catch (e) {
+      msj.classList.add('error');
+      msj.textContent = 'Error al guardar (' + (e.code || e.message) + ')';
+    }
+    $('btnGuardar').disabled = false;
+  }
+</script>
+</body>
+</html>
