@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIVO — Agenda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Lexend:wght@300;400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fondo:#F6F8F8;--superficie:#FFFFFF;--niebla:#E4EAEA;
+    --grafito:#171A1E;--gris:#5C666B;
+    --petroleo:#0C7268;--petroleo-oscuro:#0A5B53;--petroleo-tinte:#E3F2F0;
+    --violeta:#5B4FD8;--violeta-tinte:#EDEAFB;
+    --ambar:#B45309;--ambar-tinte:#FBEEDC;
+    --rojo:#C2362F;--rojo-tinte:#FAE7E5;
+    --exito:#12805C;--exito-tinte:#E5F5EC;
+    --flash:linear-gradient(90deg,#2FD9A8 0%,#4BB8D8 50%,#7C6CF0 100%);
+    --radio:12px;
+    --sombra:0 1px 2px rgba(23,26,30,.05),0 4px 16px rgba(23,26,30,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Lexend',sans-serif;background:var(--fondo);color:var(--grafito);min-height:100vh}
+  :focus-visible{outline:none;box-shadow:0 0 0 2px var(--superficie),0 0 0 4px var(--petroleo)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  .oculto{display:none!important}
+
+  header{background:var(--superficie);border-bottom:1px solid var(--niebla);padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .lente{width:34px;height:34px;border-radius:50%;background:conic-gradient(from 210deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);display:grid;place-items:center;flex-shrink:0}
+  .lente::after{content:'';width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#2A3138 0%,#171A1E 60%)}
+  .wordmark{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 122,'wght' 800;font-size:1.2rem;letter-spacing:.04em;line-height:1}
+  .wordmark small{display:block;font-family:'Lexend';font-weight:400;font-size:.55rem;letter-spacing:.14em;color:var(--gris);text-transform:uppercase;margin-top:2px;font-variation-settings:normal}
+  .cabecera-derecha{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--gris);flex-wrap:wrap;justify-content:flex-end}
+  .cabecera-derecha strong{color:var(--grafito);font-weight:600}
+  .boton-secundario{background:var(--superficie);color:var(--gris);border:1px solid var(--niebla);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:'Lexend';font-size:.76rem;font-weight:500;transition:border-color .15s,color .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .boton-secundario:hover{border-color:var(--gris);color:var(--grafito)}
+
+  .sede{display:flex;align-items:center;gap:8px;background:var(--superficie);border:1px solid var(--niebla);border-radius:9px;padding:6px 12px;cursor:pointer;font-family:'Lexend';font-size:.78rem;font-weight:600;color:var(--grafito);transition:border-color .15s;position:relative}
+  .sede:hover{border-color:var(--petroleo)}
+  .sede .punto{width:6px;height:6px;border-radius:50%;background:var(--petroleo)}
+  .sede svg{width:12px;height:12px;color:var(--gris)}
+  .sede-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:210px;background:var(--superficie);border:1px solid var(--niebla);border-radius:10px;box-shadow:var(--sombra);z-index:40;padding:6px;display:flex;flex-direction:column;gap:2px}
+  .sede-menu button{display:flex;align-items:center;gap:9px;text-align:left;background:none;border:none;border-radius:8px;padding:9px 11px;cursor:pointer;font-family:'Lexend';font-size:.8rem;font-weight:500;color:var(--grafito)}
+  .sede-menu button:hover{background:var(--fondo)}
+  .sede-menu button.actual{background:var(--petroleo-tinte);color:var(--petroleo-oscuro);font-weight:600}
+  .sede-menu .codigo{font-family:'Spline Sans Mono',monospace;font-size:.68rem;color:var(--gris)}
+
+  main{max-width:1180px;margin:0 auto;padding:24px 24px 60px}
+
+  .portal{max-width:420px;margin:60px auto;text-align:center;padding:0 20px}
+  .portal .lente{width:52px;height:52px;margin:0 auto 18px}.portal .lente::after{width:38px;height:38px}
+  .boton-google{display:inline-flex;align-items:center;justify-content:center;gap:11px;width:100%;padding:13px 20px;margin-top:22px;background:var(--petroleo);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Lexend';font-size:.92rem;font-weight:600}
+  .aviso-denegado{background:var(--rojo-tinte);color:var(--rojo);border:1px solid var(--rojo);border-radius:10px;padding:14px 16px;font-size:.84rem;margin-top:22px;line-height:1.5}
+
+  /* ─── barra de control ─── */
+  .barra{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+  h1{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 700;font-size:1.5rem}
+  .nav-fecha{display:flex;align-items:center;gap:6px}
+  .nav-fecha button{background:var(--superficie);border:1px solid var(--niebla);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:.9rem;color:var(--gris);display:grid;place-items:center;transition:border-color .15s,color .15s}
+  .nav-fecha button:hover{border-color:var(--petroleo);color:var(--petroleo)}
+  .nav-fecha .hoy{width:auto;padding:0 14px;font-family:'Lexend';font-size:.76rem;font-weight:600}
+  .fecha-actual{font-size:.9rem;font-weight:600;min-width:200px}
+  .fecha-actual small{display:block;font-size:.68rem;color:var(--gris);font-weight:400}
+  .selector-vista{display:flex;background:var(--superficie);border:1px solid var(--niebla);border-radius:9px;overflow:hidden;margin-left:auto}
+  .selector-vista button{background:none;border:none;padding:8px 18px;cursor:pointer;font-family:'Lexend';font-size:.78rem;font-weight:600;color:var(--gris);transition:all .15s}
+  .selector-vista button.activo{background:var(--petroleo);color:#fff}
+  .boton-principal{background:var(--petroleo);color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-family:'Lexend';font-size:.84rem;font-weight:600;transition:background .15s;display:inline-flex;align-items:center;gap:7px}
+  .boton-principal:hover{background:var(--petroleo-oscuro)}
+  .boton-principal:disabled{opacity:.55;cursor:wait}
+
+  /* ─── vista día ─── */
+  .panel{background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);overflow:hidden}
+  .lista-dia{display:flex;flex-direction:column}
+  .cita-linea{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--niebla);cursor:pointer;transition:background .12s}
+  .cita-linea:last-child{border-bottom:none}
+  .cita-linea:hover{background:var(--fondo)}
+  .cita-hora{font-family:'Spline Sans Mono',monospace;font-size:.92rem;font-weight:600;min-width:52px}
+  .cita-hora small{display:block;font-size:.64rem;color:var(--gris);font-weight:400}
+  .cita-info{flex:1;min-width:0}
+  .cita-info .nom{font-weight:600;font-size:.9rem}
+  .cita-info .det{font-size:.72rem;color:var(--gris);margin-top:2px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:.66rem;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+  .chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+  .chip.agendada{background:var(--fondo);color:var(--gris);border:1px solid var(--niebla)}
+  .chip.confirmada{background:var(--petroleo-tinte);color:var(--petroleo-oscuro)}
+  .chip.en_atencion{background:var(--violeta-tinte);color:var(--violeta)}
+  .chip.atendida{background:var(--exito-tinte);color:var(--exito)}
+  .chip.no_asistio{background:var(--ambar-tinte);color:var(--ambar)}
+  .chip.cancelada{background:var(--rojo-tinte);color:var(--rojo)}
+  .chip.reprogramada{background:var(--ambar-tinte);color:var(--ambar)}
+  .vacio{padding:42px 22px;text-align:center;color:var(--gris);font-size:.86rem;line-height:1.6}
+
+  /* ─── vista semana ─── */
+  .semana{display:grid;grid-template-columns:repeat(7,1fr);min-height:420px}
+  .dia-col{border-right:1px solid var(--niebla);display:flex;flex-direction:column}
+  .dia-col:last-child{border-right:none}
+  .dia-cab{padding:10px 8px;text-align:center;border-bottom:1px solid var(--niebla);background:var(--fondo)}
+  .dia-cab .nombre{font-size:.64rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+  .dia-cab .numero{font-family:'Spline Sans Mono',monospace;font-size:1.05rem;font-weight:600;margin-top:2px}
+  .dia-cab.es-hoy .numero{color:var(--petroleo);position:relative}
+  .dia-cab.es-hoy .numero::after{content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:-4px;width:18px;height:2px;border-radius:2px;background:var(--flash)}
+  .dia-cuerpo{padding:8px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .mini-cita{background:var(--fondo);border:1px solid var(--niebla);border-left:3px solid var(--petroleo);border-radius:7px;padding:7px 9px;cursor:pointer;transition:border-color .15s,background .15s}
+  .mini-cita:hover{background:var(--petroleo-tinte)}
+  .mini-cita.estado-atendida{border-left-color:var(--exito)}
+  .mini-cita.estado-en_atencion{border-left-color:var(--violeta)}
+  .mini-cita.estado-cancelada,.mini-cita.estado-no_asistio{border-left-color:var(--rojo);opacity:.6}
+  .mini-cita .h{font-family:'Spline Sans Mono',monospace;font-size:.68rem;font-weight:600}
+  .mini-cita .n{font-size:.72rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+
+  /* ─── modal ─── */
+  .modal-fondo{position:fixed;inset:0;background:rgba(23,26,30,.45);display:grid;place-items:center;padding:20px;z-index:50}
+  .modal{background:var(--superficie);border-radius:var(--radio);box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:640px;max-height:calc(100vh - 40px);overflow-y:auto}
+  .modal-cabecera{position:sticky;top:0;background:var(--superficie);border-bottom:1px solid var(--niebla);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;z-index:5}
+  .modal-cabecera h2{font-size:1.05rem;font-weight:600}
+  .modal-cabecera p{font-size:.72rem;color:var(--gris);margin-top:2px}
+  .cerrar{background:none;border:none;font-size:1.4rem;color:var(--gris);cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px}
+  .cerrar:hover{background:var(--fondo);color:var(--grafito)}
+  .modal-cuerpo{padding:22px 24px}
+  .grilla{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .campo{display:flex;flex-direction:column;gap:4px}
+  .campo.ancho{grid-column:1 / -1}
+  .campo label{font-size:.66rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+  .campo input, .campo select, .campo textarea{font-family:'Lexend';font-size:.86rem;color:var(--grafito);background:var(--fondo);border:1px solid var(--niebla);border-radius:8px;padding:9px 11px;transition:border-color .15s}
+  .campo input.mono{font-family:'Spline Sans Mono',monospace;font-size:.82rem}
+  .campo input:focus, .campo select:focus, .campo textarea:focus{border-color:var(--petroleo);outline:none}
+  .campo .pista{font-size:.66rem;color:var(--gris);margin-top:2px}
+  .obligatorio::after{content:' *';color:var(--rojo)}
+  textarea{resize:vertical;min-height:64px}
+
+  .buscador-paciente{position:relative}
+  .resultados-busqueda{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--superficie);border:1px solid var(--niebla);border-radius:9px;box-shadow:var(--sombra);z-index:20;max-height:220px;overflow-y:auto}
+  .resultado-item{padding:10px 13px;cursor:pointer;border-bottom:1px solid var(--niebla);font-size:.84rem}
+  .resultado-item:last-child{border-bottom:none}
+  .resultado-item:hover{background:var(--petroleo-tinte)}
+  .resultado-item .doc{font-family:'Spline Sans Mono',monospace;font-size:.7rem;color:var(--gris)}
+  .paciente-elegido{display:flex;align-items:center;gap:10px;background:var(--petroleo-tinte);border:1px solid var(--petroleo);border-radius:9px;padding:10px 13px;font-size:.86rem}
+  .paciente-elegido .nom{font-weight:600;flex:1}
+  .paciente-elegido button{background:none;border:none;color:var(--petroleo-oscuro);cursor:pointer;font-size:1rem;padding:2px 6px}
+  .aviso-info{background:var(--petroleo-tinte);color:var(--petroleo-oscuro);border:1px solid var(--petroleo);border-radius:9px;padding:10px 13px;font-size:.76rem;line-height:1.45;margin-bottom:14px}
+
+  .modal-pie{position:sticky;bottom:0;background:var(--superficie);border-top:1px solid var(--niebla);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .mensaje-form{font-size:.76rem;font-weight:500}
+  .mensaje-form.ok{color:var(--exito)}
+  .mensaje-form.error{color:var(--rojo)}
+  .acciones-pie{display:flex;gap:9px;margin-left:auto;flex-wrap:wrap}
+
+  @media (max-width:900px){
+    .semana{grid-template-columns:repeat(2,1fr)}
+    .dia-col{border-bottom:1px solid var(--niebla)}
+    .grilla{grid-template-columns:1fr}
+    main{padding:18px 14px 40px}
+  }
+</style>
+</head>
+<body>
+
+<div class="portal oculto" id="portal">
+  <div class="lente" aria-hidden="true"></div>
+  <h1 class="wordmark" style="font-size:2rem">SIVO<small>Visión Óptica Integral</small></h1>
+  <p style="font-size:.85rem;color:var(--gris);margin:16px 0 20px;line-height:1.5">Módulo de Agenda.<br>Inicia sesión para acceder.</p>
+  <button class="boton-google" id="btnEntrar">Entrar con Google</button>
+  <div class="aviso-denegado oculto" id="avisoDenegado"></div>
+</div>
+
+<div id="app" class="oculto">
+  <header>
+    <div class="lente" aria-hidden="true"></div>
+    <div class="wordmark">SIVO<small>Agenda</small></div>
+    <button class="sede" id="btnSede">
+      <span class="punto" aria-hidden="true"></span>
+      <span id="nombreSede">Sede</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="cabecera-derecha">
+      <span><strong id="usuarioNombre"></strong> · <span id="usuarioRol"></span></span>
+      <a href="index.html" class="boton-secundario">← Tablero</a>
+      <button class="boton-secundario" id="btnSalir">Salir</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="barra">
+      <h1>Agenda</h1>
+      <div class="nav-fecha">
+        <button id="btnAnterior" aria-label="Anterior">‹</button>
+        <button class="hoy" id="btnHoy">Hoy</button>
+        <button id="btnSiguiente" aria-label="Siguiente">›</button>
+      </div>
+      <div class="fecha-actual" id="fechaActual"></div>
+      <div class="selector-vista">
+        <button id="btnVistaDia" class="activo">Día</button>
+        <button id="btnVistaSemana">Semana</button>
+      </div>
+      <button class="boton-principal" id="btnNuevaCita">+ Nueva cita</button>
+    </div>
+
+    <div class="panel">
+      <div id="vistaDia" class="lista-dia"></div>
+      <div id="vistaSemana" class="semana oculto"></div>
+      <div id="vacio" class="vacio oculto"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ═════ MODAL CITA ═════ -->
+<div class="modal-fondo oculto" id="modalFondo">
+  <div class="modal" role="dialog">
+    <div class="modal-cabecera">
+      <div>
+        <h2 id="modalTitulo">Nueva cita</h2>
+        <p id="modalSubtitulo"></p>
+      </div>
+      <button class="cerrar" id="btnCerrar" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div class="modal-cuerpo">
+      <form id="formCita">
+        <input type="hidden" id="citaId">
+        <input type="hidden" id="pacienteElegidoId">
+
+        <div class="campo ancho" style="margin-bottom:14px">
+          <label class="obligatorio">Paciente</label>
+          <div class="buscador-paciente" id="zonaBusqueda">
+            <input type="text" id="buscarPaciente" placeholder="Busca por nombre o documento…" autocomplete="off">
+            <div class="resultados-busqueda oculto" id="resultados"></div>
+          </div>
+          <div class="paciente-elegido oculto" id="pacienteElegido">
+            <span class="nom" id="pacienteElegidoNombre"></span>
+            <span class="doc" id="pacienteElegidoDoc" style="font-family:'Spline Sans Mono',monospace;font-size:.72rem;color:var(--petroleo-oscuro)"></span>
+            <button type="button" id="btnQuitarPaciente" title="Cambiar paciente">✕</button>
+          </div>
+        </div>
+
+        <div class="grilla">
+          <div class="campo">
+            <label class="obligatorio" for="fTipo">Tipo de cita</label>
+            <select id="fTipo"></select>
+          </div>
+          <div class="campo">
+            <label class="obligatorio" for="fDuracion">Duración (minutos)</label>
+            <input type="number" id="fDuracion" class="mono" min="5" max="240" step="5">
+            <span class="pista">Se ajusta según el tipo, pero puedes cambiarla</span>
+          </div>
+          <div class="campo">
+            <label class="obligatorio" for="fFecha">Fecha</label>
+            <input type="date" id="fFecha" class="mono">
+          </div>
+          <div class="campo">
+            <label class="obligatorio" for="fHora">Hora</label>
+            <input type="time" id="fHora" class="mono">
+          </div>
+          <div class="campo">
+            <label class="obligatorio" for="fOptometra">Optómetra</label>
+            <select id="fOptometra"><option value="">— Cargando —</option></select>
+          </div>
+          <div class="campo">
+            <label for="fCanal">Canal de origen</label>
+            <select id="fCanal">
+              <option value="presencial">Presencial</option>
+              <option value="telefono">Teléfono</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="recall">Recall</option>
+            </select>
+          </div>
+          <div class="campo oculto" id="campoEstado">
+            <label for="fEstado">Estado de la cita</label>
+            <select id="fEstado">
+              <option value="agendada">Agendada</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="en_atencion">En atención</option>
+              <option value="atendida">Atendida</option>
+              <option value="no_asistio">No asistió</option>
+              <option value="cancelada">Cancelada</option>
+              <option value="reprogramada">Reprogramada</option>
+            </select>
+          </div>
+          <div class="campo ancho">
+            <label for="fObservaciones">Observaciones</label>
+            <textarea id="fObservaciones" placeholder="Notas internas de la cita…"></textarea>
+          </div>
+        </div>
+
+        <div class="aviso-info" style="margin-top:14px" id="avisoNotificacion">
+          📲 Al guardar se programará un recordatorio de WhatsApp 24 horas antes de la cita
+          (quedará en cola; el envío automático se activa en Fase 3).
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-pie">
+      <span class="mensaje-form" id="msjForm" role="status"></span>
+      <div class="acciones-pie">
+        <button type="button" class="boton-secundario" id="btnCancelar">Cancelar</button>
+        <button type="button" class="boton-principal" id="btnGuardar">Guardar cita</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, updateDoc, addDoc,
+           collection, getDocs, query, where, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdUihN1s_SqdKEJAoobOkOjQmVVk0foyQ",
+    authDomain: "sivo-dvelez.firebaseapp.com",
+    projectId: "sivo-dvelez",
+    storageBucket: "sivo-dvelez.firebasestorage.app",
+    messagingSenderId: "686206424202",
+    appId: "1:686206424202:web:e6fc32b40c7183ea108973"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const proveedor = new GoogleAuthProvider();
+
+  const $ = (id) => document.getElementById(id);
+  const nombresRol = {
+    superadmin: 'Súper Administrador', admin_sucursal: 'Admin de Sucursal',
+    optometra: 'Optómetra', recepcionista: 'Recepcionista', tecnico_lab: 'Técnico Lab.'
+  };
+  const nombresEstado = {
+    agendada: 'Agendada', confirmada: 'Confirmada', en_atencion: 'En atención',
+    atendida: 'Atendida', no_asistio: 'No asistió', cancelada: 'Cancelada',
+    reprogramada: 'Reprogramada'
+  };
+  const TIPOS_DEFECTO = [
+    { id: 'primera_vez', nombre: 'Primera vez', duracion: 45 },
+    { id: 'control', nombre: 'Control', duracion: 20 },
+    { id: 'adaptacion_lentes_contacto', nombre: 'Adaptación lentes de contacto', duracion: 30 },
+    { id: 'urgencia', nombre: 'Urgencia', duracion: 20 }
+  ];
+  const DIAS_SEMANA = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+  let perfilActual = null;
+  let sedesDisponibles = [];
+  let sedeActiva = null;
+  let optometras = [];
+  let pacientes = [];
+  let citasSede = [];
+  let tiposCita = TIPOS_DEFECTO;
+  let vista = 'dia';
+  let fechaBase = new Date();
+  let editandoCita = null;
+
+  const params = new URLSearchParams(window.location.search);
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+  function fechaISO(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function fechaBonita(d) {
+    return d.toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+      .replace(/^./, c => c.toUpperCase());
+  }
+  function lunesDe(d) {
+    const copia = new Date(d);
+    const dia = (copia.getDay() + 6) % 7; // lunes=0
+    copia.setDate(copia.getDate() - dia);
+    return copia;
+  }
+
+  // ═════ acceso ═════
+  $('btnEntrar').addEventListener('click', async () => {
+    $('avisoDenegado').classList.add('oculto');
+    try { await signInWithPopup(auth, proveedor); }
+    catch (e) {
+      $('avisoDenegado').textContent = 'No se pudo iniciar sesión (' + e.code + ').';
+      $('avisoDenegado').classList.remove('oculto');
+    }
+  });
+  $('btnSalir').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (usuario) => {
+    if (!usuario) {
+      $('portal').classList.remove('oculto');
+      $('app').classList.add('oculto');
+      return;
+    }
+    try {
+      const perfil = await getDoc(doc(db, 'usuarios', usuario.uid));
+      if (perfil.exists() && perfil.data().estado === 'activo'
+          && perfil.data().rol !== 'tecnico_lab') {
+        perfilActual = { uid: usuario.uid, ...perfil.data() };
+        $('usuarioNombre').textContent = perfilActual.nombre || '';
+        $('usuarioRol').textContent = nombresRol[perfilActual.rol] || perfilActual.rol;
+        $('portal').classList.add('oculto');
+        $('app').classList.remove('oculto');
+        await inicializar();
+      } else {
+        denegar('Tu cuenta no tiene permiso para ver la Agenda.');
+      }
+    } catch (e) {
+      denegar('Acceso denegado: esta cuenta no está autorizada en SIVO.');
+    }
+  });
+  function denegar(msj) {
+    signOut(auth);
+    $('avisoDenegado').textContent = msj;
+    $('avisoDenegado').classList.remove('oculto');
+    $('portal').classList.remove('oculto');
+    $('app').classList.add('oculto');
+  }
+
+  // ═════ inicialización ═════
+  async function inicializar() {
+    await Promise.all([cargarSedes(), cargarTipos(), cargarOptometras(), cargarPacientes()]);
+    aplicarSedeActiva();
+    poblarTipos();
+    poblarOptometras();
+    await cargarCitas();
+    render();
+
+    // ¿viene de la ficha de un paciente?
+    const pacienteParam = params.get('paciente');
+    if (pacienteParam) {
+      const p = pacientes.find(x => x.id === pacienteParam);
+      if (p) abrirModal(null, p);
+    }
+  }
+
+  async function cargarSedes() {
+    try {
+      const snap = await getDocs(collection(db, 'sucursales'));
+      const todas = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .filter(s => s.estado === 'activa');
+      sedesDisponibles = perfilActual.rol === 'superadmin'
+        ? todas
+        : todas.filter(s => (perfilActual.sucursales || []).includes(s.id));
+    } catch { sedesDisponibles = []; }
+  }
+
+  async function cargarTipos() {
+    try {
+      const snap = await getDoc(doc(db, 'configuracion', 'agenda'));
+      if (snap.exists() && Array.isArray(snap.data().tiposCita) && snap.data().tiposCita.length) {
+        tiposCita = snap.data().tiposCita;
+      }
+    } catch { /* defaults */ }
+  }
+
+  async function cargarOptometras() {
+    try {
+      const snap = await getDocs(query(collection(db, 'usuarios'), where('rol', '==', 'optometra')));
+      optometras = snap.docs.map(d => ({ uid: d.id, ...d.data() }))
+        .filter(o => o.estado === 'activo');
+    } catch { optometras = []; }
+  }
+
+  async function cargarPacientes() {
+    try {
+      const snap = await getDocs(collection(db, 'pacientes'));
+      pacientes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch { pacientes = []; }
+  }
+
+  async function cargarCitas() {
+    if (!sedeActiva) { citasSede = []; return; }
+    try {
+      const snap = await getDocs(query(collection(db, 'citas'), where('sucursalId', '==', sedeActiva)));
+      citasSede = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch { citasSede = []; }
+  }
+
+  // ═════ sede activa ═════
+  function sedeGuardada() {
+    try { return localStorage.getItem('sivo_sede_activa'); } catch { return null; }
+  }
+  function aplicarSedeActiva() {
+    let activa = sedeGuardada();
+    if (!sedesDisponibles.some(s => s.id === activa)) {
+      activa = perfilActual.sucursalPrincipal && sedesDisponibles.some(s => s.id === perfilActual.sucursalPrincipal)
+        ? perfilActual.sucursalPrincipal
+        : (sedesDisponibles[0] ? sedesDisponibles[0].id : null);
+    }
+    sedeActiva = activa;
+    if (activa) {
+      try { localStorage.setItem('sivo_sede_activa', activa); } catch {}
+      const sede = sedesDisponibles.find(s => s.id === activa);
+      $('nombreSede').textContent = sede ? sede.nombre : activa;
+    } else {
+      $('nombreSede').textContent = 'Sin sede';
+    }
+  }
+  $('btnSede').addEventListener('click', () => {
+    const abierto = document.querySelector('.sede-menu');
+    if (abierto) { abierto.remove(); return; }
+    if (sedesDisponibles.length === 0) return;
+    const menu = document.createElement('div');
+    menu.className = 'sede-menu';
+    for (const sede of sedesDisponibles) {
+      const opcion = document.createElement('button');
+      opcion.type = 'button';
+      opcion.className = sede.id === sedeActiva ? 'actual' : '';
+      opcion.innerHTML = '<span class="codigo">' + esc(sede.id) + '</span> ' + esc(sede.nombre || sede.id);
+      opcion.addEventListener('click', async () => {
+        try { localStorage.setItem('sivo_sede_activa', sede.id); } catch {}
+        aplicarSedeActiva();
+        menu.remove();
+        await cargarCitas();
+        render();
+      });
+      menu.appendChild(opcion);
+    }
+    $('btnSede').appendChild(menu);
+  });
+  document.addEventListener('click', (ev) => {
+    if (!$('btnSede').contains(ev.target)) {
+      const menu = document.querySelector('.sede-menu');
+      if (menu) menu.remove();
+    }
+  });
+
+  // ═════ navegación de fechas y vistas ═════
+  $('btnHoy').addEventListener('click', () => { fechaBase = new Date(); render(); });
+  $('btnAnterior').addEventListener('click', () => {
+    fechaBase.setDate(fechaBase.getDate() - (vista === 'dia' ? 1 : 7));
+    render();
+  });
+  $('btnSiguiente').addEventListener('click', () => {
+    fechaBase.setDate(fechaBase.getDate() + (vista === 'dia' ? 1 : 7));
+    render();
+  });
+  $('btnVistaDia').addEventListener('click', () => { vista = 'dia'; render(); });
+  $('btnVistaSemana').addEventListener('click', () => { vista = 'semana'; render(); });
+
+  function render() {
+    $('btnVistaDia').classList.toggle('activo', vista === 'dia');
+    $('btnVistaSemana').classList.toggle('activo', vista === 'semana');
+    $('vistaDia').classList.toggle('oculto', vista !== 'dia');
+    $('vistaSemana').classList.toggle('oculto', vista !== 'semana');
+    $('vacio').classList.add('oculto');
+
+    if (vista === 'dia') renderDia();
+    else renderSemana();
+  }
+
+  function citasDe(fechaStr) {
+    return citasSede
+      .filter(c => c.fecha === fechaStr)
+      .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
+  }
+
+  function renderDia() {
+    const fechaStr = fechaISO(fechaBase);
+    $('fechaActual').innerHTML = fechaBonita(fechaBase);
+    const citas = citasDe(fechaStr);
+    const cont = $('vistaDia');
+    cont.innerHTML = '';
+    if (citas.length === 0) {
+      $('vacio').classList.remove('oculto');
+      $('vacio').innerHTML = 'No hay citas para este día en esta sede.<br>Usa <strong>"+ Nueva cita"</strong> para agendar la primera.';
+      return;
+    }
+    for (const c of citas) {
+      const linea = document.createElement('div');
+      linea.className = 'cita-linea';
+      const tipo = tiposCita.find(t => t.id === c.tipo);
+      linea.innerHTML =
+        '<div class="cita-hora">' + esc(c.hora || '—') + '<small>' + (c.duracion || '—') + ' min</small></div>' +
+        '<div class="cita-info">' +
+          '<div class="nom">' + esc(c.pacienteNombre || 'Paciente') + '</div>' +
+          '<div class="det">' + esc(tipo ? tipo.nombre : c.tipo) +
+            ' · ' + esc(c.optometraNombre || '—') +
+            (c.observaciones ? ' · ' + esc(c.observaciones) : '') + '</div>' +
+        '</div>' +
+        '<span class="chip ' + esc(c.estado || 'agendada') + '">' + esc(nombresEstado[c.estado] || c.estado || 'Agendada') + '</span>';
+      linea.addEventListener('click', () => abrirModal(c.id));
+      cont.appendChild(linea);
+    }
+  }
+
+  function renderSemana() {
+    const lunes = lunesDe(fechaBase);
+    const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
+    $('fechaActual').innerHTML = 'Semana del ' + lunes.getDate() + ' de ' +
+      lunes.toLocaleDateString('es-CO', { month: 'long' }) +
+      '<small>al ' + domingo.getDate() + ' de ' + domingo.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }) + '</small>';
+
+    const cont = $('vistaSemana');
+    cont.innerHTML = '';
+    const hoyStr = fechaISO(new Date());
+    for (let i = 0; i < 7; i++) {
+      const dia = new Date(lunes); dia.setDate(lunes.getDate() + i);
+      const diaStr = fechaISO(dia);
+      const citas = citasDe(diaStr);
+      const col = document.createElement('div');
+      col.className = 'dia-col';
+      let html = '<div class="dia-cab' + (diaStr === hoyStr ? ' es-hoy' : '') + '">';
+      html += '<div class="nombre">' + DIAS_SEMANA[i] + '</div>';
+      html += '<div class="numero">' + dia.getDate() + '</div></div>';
+      html += '<div class="dia-cuerpo">';
+      for (const c of citas) {
+        html += '<div class="mini-cita estado-' + esc(c.estado || 'agendada') + '" data-id="' + esc(c.id) + '">';
+        html += '<div class="h">' + esc(c.hora || '') + '</div>';
+        html += '<div class="n">' + esc(c.pacienteNombre || '') + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      col.innerHTML = html;
+      cont.appendChild(col);
+    }
+    cont.querySelectorAll('.mini-cita').forEach(el => {
+      el.addEventListener('click', () => abrirModal(el.dataset.id));
+    });
+  }
+
+  // ═════ tipos y optometras en el formulario ═════
+  function poblarTipos() {
+    $('fTipo').innerHTML = tiposCita.map(t =>
+      '<option value="' + esc(t.id) + '" data-duracion="' + t.duracion + '">' + esc(t.nombre) + '</option>').join('');
+  }
+  $('fTipo').addEventListener('change', () => {
+    const opcion = $('fTipo').selectedOptions[0];
+    if (opcion) $('fDuracion').value = opcion.dataset.duracion || 30;
+  });
+
+  function poblarOptometras() {
+    if (optometras.length === 0) {
+      $('fOptometra').innerHTML = '<option value="">— No hay optómetras registrados —</option>';
+      return;
+    }
+    $('fOptometra').innerHTML = optometras.map(o =>
+      '<option value="' + esc(o.uid) + '">' + esc(o.nombre) + '</option>').join('');
+  }
+
+  // ═════ búsqueda de paciente ═════
+  let pacienteSeleccionado = null;
+
+  $('buscarPaciente').addEventListener('input', (ev) => {
+    const t = ev.target.value.trim().toLowerCase();
+    const caja = $('resultados');
+    if (t.length < 2) { caja.classList.add('oculto'); return; }
+    const encontrados = pacientes.filter(p =>
+      (p.numeroDocumento || '').toLowerCase().includes(t)
+      || (p.nombres || '').toLowerCase().includes(t)
+      || (p.apellidos || '').toLowerCase().includes(t)
+    ).slice(0, 8);
+    if (encontrados.length === 0) {
+      caja.innerHTML = '<div class="resultado-item" style="cursor:default;color:var(--gris)">Sin resultados. ¿Está registrado el paciente?</div>';
+    } else {
+      caja.innerHTML = encontrados.map(p =>
+        '<div class="resultado-item" data-id="' + esc(p.id) + '">' +
+        '<div>' + esc((p.nombres || '') + ' ' + (p.apellidos || '')) + '</div>' +
+        '<div class="doc">' + esc((p.tipoDocumento || '') + ' ' + (p.numeroDocumento || '')) + '</div>' +
+        '</div>').join('');
+      caja.querySelectorAll('[data-id]').forEach(el => {
+        el.addEventListener('click', () => {
+          const p = pacientes.find(x => x.id === el.dataset.id);
+          if (p) elegirPaciente(p);
+        });
+      });
+    }
+    caja.classList.remove('oculto');
+  });
+
+  function elegirPaciente(p) {
+    pacienteSeleccionado = p;
+    $('pacienteElegidoId').value = p.id;
+    $('pacienteElegidoNombre').textContent = (p.nombres || '') + ' ' + (p.apellidos || '');
+    $('pacienteElegidoDoc').textContent = (p.tipoDocumento || '') + ' ' + (p.numeroDocumento || '');
+    $('zonaBusqueda').classList.add('oculto');
+    $('resultados').classList.add('oculto');
+    $('pacienteElegido').classList.remove('oculto');
+  }
+  $('btnQuitarPaciente').addEventListener('click', () => {
+    pacienteSeleccionado = null;
+    $('pacienteElegidoId').value = '';
+    $('pacienteElegido').classList.add('oculto');
+    $('zonaBusqueda').classList.remove('oculto');
+    $('buscarPaciente').value = '';
+    $('buscarPaciente').focus();
+  });
+
+  // ═════ modal ═════
+  $('btnNuevaCita').addEventListener('click', () => abrirModal(null));
+  $('btnCerrar').addEventListener('click', cerrarModal);
+  $('btnCancelar').addEventListener('click', cerrarModal);
+
+  function cerrarModal() {
+    $('modalFondo').classList.add('oculto');
+    editandoCita = null;
+    document.body.style.overflow = '';
+  }
+
+  function abrirModal(citaId, pacientePrefijado) {
+    editandoCita = citaId;
+    document.body.style.overflow = 'hidden';
+    $('formCita').reset();
+    $('citaId').value = '';
+    $('msjForm').textContent = '';
+    $('msjForm').className = 'mensaje-form';
+    pacienteSeleccionado = null;
+    $('pacienteElegido').classList.add('oculto');
+    $('zonaBusqueda').classList.remove('oculto');
+    $('resultados').classList.add('oculto');
+    $('campoEstado').classList.toggle('oculto', !citaId);
+    $('avisoNotificacion').classList.toggle('oculto', !!citaId);
+    poblarTipos();
+    poblarOptometras();
+
+    const sede = sedesDisponibles.find(s => s.id === sedeActiva);
+    $('modalSubtitulo').textContent = 'Sede: ' + (sede ? sede.nombre : sedeActiva || '—');
+
+    if (citaId) {
+      const c = citasSede.find(x => x.id === citaId);
+      if (!c) return;
+      $('modalTitulo').textContent = 'Editar cita';
+      $('citaId').value = citaId;
+      const p = pacientes.find(x => x.id === c.pacienteId);
+      if (p) elegirPaciente(p);
+      else {
+        $('pacienteElegidoId').value = c.pacienteId || '';
+        $('pacienteElegidoNombre').textContent = c.pacienteNombre || 'Paciente';
+        $('pacienteElegidoDoc').textContent = '';
+        $('zonaBusqueda').classList.add('oculto');
+        $('pacienteElegido').classList.remove('oculto');
+      }
+      $('fTipo').value = c.tipo || tiposCita[0].id;
+      $('fDuracion').value = c.duracion || 30;
+      $('fFecha').value = c.fecha || '';
+      $('fHora').value = c.hora || '';
+      $('fOptometra').value = c.optometraId || '';
+      $('fCanal').value = c.canalOrigen || 'presencial';
+      $('fEstado').value = c.estado || 'agendada';
+      $('fObservaciones').value = c.observaciones || '';
+    } else {
+      $('modalTitulo').textContent = 'Nueva cita';
+      $('fFecha').value = fechaISO(fechaBase);
+      $('fHora').value = '08:00';
+      const primerTipo = tiposCita[0];
+      $('fTipo').value = primerTipo.id;
+      $('fDuracion').value = primerTipo.duracion;
+      if (pacientePrefijado) elegirPaciente(pacientePrefijado);
+    }
+
+    $('modalFondo').classList.remove('oculto');
+  }
+
+  // ═════ guardado ═════
+  $('btnGuardar').addEventListener('click', guardar);
+
+  async function guardar() {
+    const msj = $('msjForm');
+    msj.className = 'mensaje-form';
+
+    if (!sedeActiva) {
+      msj.classList.add('error'); msj.textContent = 'No hay sede activa seleccionada.'; return;
+    }
+    if (!$('pacienteElegidoId').value) {
+      msj.classList.add('error'); msj.textContent = 'Selecciona un paciente.'; return;
+    }
+    if (!$('fFecha').value || !$('fHora').value) {
+      msj.classList.add('error'); msj.textContent = 'Fecha y hora son obligatorias.'; return;
+    }
+    if (!$('fOptometra').value) {
+      msj.classList.add('error'); msj.textContent = 'Selecciona un optómetra. Si no aparece ninguno, primero invítalo en Usuarios y roles.'; return;
+    }
+    const duracion = parseInt($('fDuracion').value, 10);
+    if (!duracion || duracion < 5) {
+      msj.classList.add('error'); msj.textContent = 'Duración inválida.'; return;
+    }
+
+    // choque de horario con el mismo optómetra
+    const fecha = $('fFecha').value, hora = $('fHora').value;
+    const optometraId = $('fOptometra').value;
+    const inicio = minutosDe(hora), fin = inicio + duracion;
+    const choque = citasSede.find(c =>
+      c.id !== editandoCita
+      && c.fecha === fecha
+      && c.optometraId === optometraId
+      && !['cancelada', 'no_asistio', 'reprogramada'].includes(c.estado)
+      && seSuperponen(inicio, fin, minutosDe(c.hora), minutosDe(c.hora) + (c.duracion || 30))
+    );
+    if (choque) {
+      msj.classList.add('error');
+      msj.textContent = 'Choque de agenda: ' + (choque.pacienteNombre || 'otra cita') + ' a las ' + choque.hora + ' con el mismo optómetra.';
+      return;
+    }
+
+    $('btnGuardar').disabled = true;
+    msj.textContent = 'Guardando…';
+
+    const paciente = pacientes.find(p => p.id === $('pacienteElegidoId').value);
+    const optometra = optometras.find(o => o.uid === optometraId);
+    const tipoObj = tiposCita.find(t => t.id === $('fTipo').value);
+
+    try {
+      const datos = {
+        pacienteId: $('pacienteElegidoId').value,
+        pacienteNombre: paciente ? (paciente.nombres + ' ' + paciente.apellidos) : $('pacienteElegidoNombre').textContent,
+        sucursalId: sedeActiva,
+        optometraId: optometraId,
+        optometraNombre: optometra ? optometra.nombre : '',
+        fecha: fecha,
+        hora: hora,
+        duracion: duracion,
+        tipo: $('fTipo').value,
+        canalOrigen: $('fCanal').value,
+        observaciones: $('fObservaciones').value.trim(),
+        modificadoPor: perfilActual.uid,
+        fechaModificacion: serverTimestamp()
+      };
+
+      if (editandoCita) {
+        datos.estado = $('fEstado').value;
+        await updateDoc(doc(db, 'citas', editandoCita), datos);
+
+        // ciclo del paciente según estado
+        if (datos.estado === 'atendida' && paciente) {
+          await updateDoc(doc(db, 'pacientes', paciente.id), { estadoCiclo: 'atendido' })
+            .catch(() => {});
+        }
+        msj.classList.add('ok'); msj.textContent = '✓ Cita actualizada';
+      } else {
+        datos.estado = 'agendada';
+        datos.creadoPor = perfilActual.uid;
+        datos.fechaCreacion = serverTimestamp();
+        datos.recordatorio = { programado: true, enviado: false };
+        const nueva = await addDoc(collection(db, 'citas'), datos);
+
+        // cola de notificación WhatsApp (Fase 3 la procesa)
+        const fechaCita = new Date(fecha + 'T' + hora + ':00');
+        const recordatorio = new Date(fechaCita.getTime() - 24 * 60 * 60 * 1000);
+        const sede = sedesDisponibles.find(s => s.id === sedeActiva);
+        const mensaje = 'Hola ' + (paciente ? paciente.nombres : '') +
+          ', te recordamos tu cita en ' + (sede ? sede.nombre : 'nuestra óptica') +
+          ' el ' + fechaCita.toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long' }) +
+          ' a las ' + hora + '. Si no puedes asistir, contáctanos para reprogramar. — Ópticas D-Velez';
+        await addDoc(collection(db, 'notificaciones'), {
+          tipo: 'recordatorio_cita',
+          destinatario: paciente ? (paciente.whatsapp || paciente.telefono || '') : '',
+          canal: 'whatsapp',
+          mensaje: mensaje,
+          referencia: { coleccion: 'citas', documentoId: nueva.id },
+          estado: 'pendiente',
+          fechaProgramada: recordatorio.toISOString(),
+          fechaEnvio: null,
+          creadoPor: perfilActual.uid,
+          fechaCreacion: serverTimestamp()
+        });
+
+        // ciclo del paciente
+        if (paciente) {
+          await updateDoc(doc(db, 'pacientes', paciente.id), { estadoCiclo: 'cita_agendada' })
+            .catch(() => {});
+        }
+        msj.classList.add('ok'); msj.textContent = '✓ Cita agendada y recordatorio en cola';
+      }
+
+      await cargarCitas();
+      render();
+      setTimeout(cerrarModal, 900);
+    } catch (e) {
+      msj.classList.add('error');
+      msj.textContent = 'Error al guardar (' + (e.code || e.message) + ')';
+    }
+    $('btnGuardar').disabled = false;
+  }
+
+  function minutosDe(hhmm) {
+    if (!hhmm) return 0;
+    const [h, m] = hhmm.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  }
+  function seSuperponen(ini1, fin1, ini2, fin2) {
+    return ini1 < fin2 && ini2 < fin1;
+  }
+</script>
+</body>
+</html>

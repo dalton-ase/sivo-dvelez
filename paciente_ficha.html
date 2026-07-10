@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIVO — Ficha del paciente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Lexend:wght@300;400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fondo:#F6F8F8;--superficie:#FFFFFF;--niebla:#E4EAEA;
+    --grafito:#171A1E;--gris:#5C666B;
+    --petroleo:#0C7268;--petroleo-oscuro:#0A5B53;--petroleo-tinte:#E3F2F0;
+    --violeta:#5B4FD8;--violeta-tinte:#EDEAFB;
+    --ambar:#B45309;--ambar-tinte:#FBEEDC;
+    --rojo:#C2362F;--rojo-tinte:#FAE7E5;
+    --exito:#12805C;--exito-tinte:#E5F5EC;
+    --flash:linear-gradient(90deg,#2FD9A8 0%,#4BB8D8 50%,#7C6CF0 100%);
+    --radio:12px;
+    --sombra:0 1px 2px rgba(23,26,30,.05),0 4px 16px rgba(23,26,30,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Lexend',sans-serif;background:var(--fondo);color:var(--grafito);min-height:100vh}
+  :focus-visible{outline:none;box-shadow:0 0 0 2px var(--superficie),0 0 0 4px var(--petroleo)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  .oculto{display:none!important}
+
+  header{background:var(--superficie);border-bottom:1px solid var(--niebla);padding:14px 28px;display:flex;align-items:center;gap:14px}
+  .lente{width:34px;height:34px;border-radius:50%;background:conic-gradient(from 210deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);display:grid;place-items:center;flex-shrink:0}
+  .lente::after{content:'';width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#2A3138 0%,#171A1E 60%)}
+  .wordmark{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 122,'wght' 800;font-size:1.2rem;letter-spacing:.04em;line-height:1}
+  .wordmark small{display:block;font-family:'Lexend';font-weight:400;font-size:.55rem;letter-spacing:.14em;color:var(--gris);text-transform:uppercase;margin-top:2px;font-variation-settings:normal}
+  .cabecera-derecha{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--gris);flex-wrap:wrap;justify-content:flex-end}
+  .cabecera-derecha strong{color:var(--grafito);font-weight:600}
+  .boton-secundario{background:var(--superficie);color:var(--gris);border:1px solid var(--niebla);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:'Lexend';font-size:.76rem;font-weight:500;transition:border-color .15s,color .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .boton-secundario:hover{border-color:var(--gris);color:var(--grafito)}
+  .boton-secundario:disabled{opacity:.55;cursor:not-allowed}
+
+  main{max-width:1140px;margin:0 auto;padding:26px 24px 60px}
+
+  .portal{max-width:420px;margin:60px auto;text-align:center;padding:0 20px}
+  .portal .lente{width:52px;height:52px;margin:0 auto 18px}.portal .lente::after{width:38px;height:38px}
+  .boton-google{display:inline-flex;align-items:center;justify-content:center;gap:11px;width:100%;padding:13px 20px;margin-top:22px;background:var(--petroleo);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Lexend';font-size:.92rem;font-weight:600}
+  .aviso-denegado{background:var(--rojo-tinte);color:var(--rojo);border:1px solid var(--rojo);border-radius:10px;padding:14px 16px;font-size:.84rem;margin-top:22px;line-height:1.5}
+
+  .cargando{padding:80px 20px;text-align:center;color:var(--gris);font-size:.86rem}
+
+  .ficha-cabecera{
+    background:var(--superficie);border:1px solid var(--niebla);
+    border-radius:var(--radio);box-shadow:var(--sombra);
+    padding:26px 28px;margin-bottom:22px;
+    position:relative;overflow:hidden;
+  }
+  .ficha-cabecera::before{
+    content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--flash);
+  }
+  .breadcrumb{display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--gris);margin-bottom:10px}
+  .breadcrumb a{color:var(--gris);text-decoration:none;font-weight:500}
+  .breadcrumb a:hover{color:var(--petroleo)}
+  .ficha-fila{display:flex;align-items:flex-start;gap:22px;flex-wrap:wrap}
+  .ficha-identidad{flex:1;min-width:280px}
+  .ficha-identidad h1{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 700;font-size:1.7rem;letter-spacing:.003em;line-height:1.15;margin-bottom:6px}
+  .ficha-identidad .doc-grande{font-family:'Spline Sans Mono',monospace;font-size:.9rem;color:var(--gris);font-weight:500}
+  .ficha-chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:600;padding:4px 12px;border-radius:20px;white-space:nowrap}
+  .chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+  .chip.menor{background:var(--ambar-tinte);color:var(--ambar)}
+  .chip.adulto{background:var(--petroleo-tinte);color:var(--petroleo-oscuro)}
+  .chip.firmado{background:var(--exito-tinte);color:var(--exito)}
+  .chip.sinfirma{background:var(--rojo-tinte);color:var(--rojo)}
+  .chip.ciclo{background:var(--violeta-tinte);color:var(--violeta)}
+  .ficha-acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+  .boton-principal{background:var(--petroleo);color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-family:'Lexend';font-size:.84rem;font-weight:600;transition:background .15s;display:inline-flex;align-items:center;gap:7px;text-decoration:none}
+  .boton-principal:hover{background:var(--petroleo-oscuro)}
+
+  .ficha-grid{display:grid;grid-template-columns:1fr 340px;gap:20px}
+
+  .tarjeta{
+    background:var(--superficie);border:1px solid var(--niebla);
+    border-radius:var(--radio);box-shadow:var(--sombra);
+    padding:22px 24px;margin-bottom:20px;
+  }
+  .tarjeta h2{
+    font-size:.78rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--gris);margin-bottom:16px;padding-bottom:8px;
+    border-bottom:1px solid var(--niebla);display:flex;align-items:center;gap:8px;
+  }
+  .tarjeta h2 svg{width:14px;height:14px;color:var(--petroleo)}
+
+  .dato-grilla{display:grid;grid-template-columns:1fr 1fr;gap:14px 26px}
+  .dato{display:flex;flex-direction:column;gap:2px}
+  .dato-etiqueta{font-size:.64rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+  .dato-valor{font-size:.9rem;color:var(--grafito);font-weight:500;line-height:1.35}
+  .dato-valor.mono{font-family:'Spline Sans Mono',monospace;font-size:.85rem}
+  .dato-valor.vacio{color:var(--gris);font-weight:400;font-style:italic}
+
+  .archivado{background:var(--fondo);border:1px dashed var(--niebla);border-radius:9px;padding:14px 16px;margin-top:10px}
+  .archivado h3{font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);margin-bottom:10px}
+  .archivado .meta{font-size:.68rem;color:var(--gris);margin-top:8px;font-style:italic}
+
+  .lista-consent{display:flex;flex-direction:column;gap:8px}
+  .consent-linea{
+    display:flex;align-items:center;gap:14px;
+    padding:12px 14px;background:var(--fondo);
+    border:1px solid var(--niebla);border-radius:9px;
+  }
+  .consent-icono{
+    width:36px;height:36px;border-radius:9px;
+    background:var(--exito-tinte);color:var(--exito);
+    display:grid;place-items:center;flex-shrink:0;font-size:.88rem;
+  }
+  .consent-info{flex:1;min-width:0}
+  .consent-info .tit{font-size:.85rem;font-weight:600}
+  .consent-info .meta{font-size:.7rem;color:var(--gris);margin-top:2px}
+  .consent-info .meta strong{color:var(--grafito);font-weight:600}
+  .consent-linea a{color:var(--petroleo);font-weight:600;font-size:.75rem;text-decoration:none;padding:6px 10px;border-radius:6px;background:var(--superficie);border:1px solid var(--petroleo)}
+  .consent-linea a:hover{background:var(--petroleo-tinte)}
+  .consent-vacio{text-align:center;padding:22px;color:var(--gris);font-size:.82rem}
+
+  .timeline{position:relative;padding-left:22px}
+  .timeline::before{content:'';position:absolute;left:6px;top:6px;bottom:6px;width:1px;background:var(--niebla)}
+  .timeline-item{position:relative;padding-bottom:18px}
+  .timeline-item:last-child{padding-bottom:0}
+  .timeline-punto{position:absolute;left:-19px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--superficie);border:2px solid var(--petroleo)}
+  .timeline-item.evento-registro .timeline-punto{border-color:var(--exito)}
+  .timeline-item.evento-consentimiento .timeline-punto{border-color:var(--exito)}
+  .timeline-item.evento-edicion .timeline-punto{border-color:var(--gris)}
+  .timeline-item.evento-archivo .timeline-punto{border-color:var(--ambar)}
+  .timeline-fecha{font-size:.66rem;color:var(--gris);font-family:'Spline Sans Mono',monospace;letter-spacing:.01em}
+  .timeline-titulo{font-size:.86rem;font-weight:600;margin-top:2px}
+  .timeline-detalle{font-size:.74rem;color:var(--gris);margin-top:2px;line-height:1.45}
+  .timeline-vacio{color:var(--gris);font-size:.8rem;text-align:center;padding:16px}
+
+  .aviso-pronto{
+    background:var(--fondo);border:1px dashed var(--niebla);
+    border-radius:9px;padding:14px 16px;font-size:.78rem;
+    color:var(--gris);line-height:1.5;text-align:center;
+  }
+  .aviso-pronto strong{color:var(--grafito)}
+
+  @media (max-width:900px){
+    .ficha-grid{grid-template-columns:1fr}
+    .dato-grilla{grid-template-columns:1fr}
+    main{padding:20px 14px 40px}
+  }
+</style>
+</head>
+<body>
+
+<div class="portal oculto" id="portal">
+  <div class="lente" aria-hidden="true"></div>
+  <h1 class="wordmark" style="font-size:2rem">SIVO<small>Visión Óptica Integral</small></h1>
+  <p style="font-size:.85rem;color:var(--gris);margin:16px 0 20px;line-height:1.5">Ficha del paciente.<br>Inicia sesión para acceder.</p>
+  <button class="boton-google" id="btnEntrar">Entrar con Google</button>
+  <div class="aviso-denegado oculto" id="avisoDenegado"></div>
+</div>
+
+<div id="app" class="oculto">
+  <header>
+    <div class="lente" aria-hidden="true"></div>
+    <div class="wordmark">SIVO<small>Ficha del paciente</small></div>
+    <div class="cabecera-derecha">
+      <span><strong id="usuarioNombre"></strong> · <span id="usuarioRol"></span></span>
+      <a href="pacientes.html" class="boton-secundario">← Listado</a>
+      <a href="index.html" class="boton-secundario">Tablero</a>
+      <button class="boton-secundario" id="btnSalir">Salir</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="cargando" class="cargando">Cargando ficha…</div>
+    <div id="fichaContenido" class="oculto"></div>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, collection, getDocs }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdUihN1s_SqdKEJAoobOkOjQmVVk0foyQ",
+    authDomain: "sivo-dvelez.firebaseapp.com",
+    projectId: "sivo-dvelez",
+    storageBucket: "sivo-dvelez.firebasestorage.app",
+    messagingSenderId: "686206424202",
+    appId: "1:686206424202:web:e6fc32b40c7183ea108973"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const proveedor = new GoogleAuthProvider();
+
+  const $ = (id) => document.getElementById(id);
+  const nombresRol = {
+    superadmin: 'Súper Administrador', admin_sucursal: 'Admin de Sucursal',
+    optometra: 'Optómetra', recepcionista: 'Recepcionista', tecnico_lab: 'Técnico Lab.'
+  };
+  const nombresParentesco = {
+    madre: 'Madre', padre: 'Padre', abuelo: 'Abuelo/a', tio: 'Tío/a',
+    tutor: 'Tutor legal', otro: 'Otro'
+  };
+  const nombresCiclo = {
+    registrado: 'Registrado',
+    cita_agendada: 'Cita agendada',
+    atendido: 'Atendido',
+    en_produccion: 'En producción',
+    gafas_listas: 'Gafas listas',
+    entregado: 'Entregado',
+    en_seguimiento: 'En seguimiento',
+    recall_programado: 'Recall programado'
+  };
+  const nombresGenero = {
+    femenino: 'Femenino', masculino: 'Masculino', otro: 'Otro', no_declara: 'No declara'
+  };
+
+  let perfilActual = null;
+  let pacienteActual = null;
+
+  const params = new URLSearchParams(window.location.search);
+  const pacienteId = params.get('id');
+
+  $('btnEntrar').addEventListener('click', async () => {
+    $('avisoDenegado').classList.add('oculto');
+    try { await signInWithPopup(auth, proveedor); }
+    catch (e) {
+      $('avisoDenegado').textContent = 'No se pudo iniciar sesión (' + e.code + ').';
+      $('avisoDenegado').classList.remove('oculto');
+    }
+  });
+  $('btnSalir').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (usuario) => {
+    if (!usuario) {
+      $('portal').classList.remove('oculto');
+      $('app').classList.add('oculto');
+      return;
+    }
+    try {
+      const perfil = await getDoc(doc(db, 'usuarios', usuario.uid));
+      if (perfil.exists() && perfil.data().estado === 'activo'
+          && perfil.data().rol !== 'tecnico_lab') {
+        perfilActual = { uid: usuario.uid, ...perfil.data() };
+        $('usuarioNombre').textContent = perfilActual.nombre || '';
+        $('usuarioRol').textContent = nombresRol[perfilActual.rol] || perfilActual.rol;
+        $('portal').classList.add('oculto');
+        $('app').classList.remove('oculto');
+        await cargarFicha();
+      } else {
+        denegar('Tu cuenta no tiene permiso para ver fichas de pacientes.');
+      }
+    } catch (e) {
+      denegar('Acceso denegado: esta cuenta no está autorizada en SIVO.');
+    }
+  });
+  function denegar(msj) {
+    signOut(auth);
+    $('avisoDenegado').textContent = msj;
+    $('avisoDenegado').classList.remove('oculto');
+    $('portal').classList.remove('oculto');
+    $('app').classList.add('oculto');
+  }
+
+  async function cargarFicha() {
+    if (!pacienteId) {
+      $('cargando').innerHTML = 'No se especificó un paciente. <a href="pacientes.html" style="color:var(--petroleo)">Volver al listado</a>';
+      return;
+    }
+    try {
+      const snap = await getDoc(doc(db, 'pacientes', pacienteId));
+      if (!snap.exists()) {
+        $('cargando').innerHTML = 'Paciente no encontrado. <a href="pacientes.html" style="color:var(--petroleo)">Volver al listado</a>';
+        return;
+      }
+      pacienteActual = { id: snap.id, ...snap.data() };
+      const consentimientos = await cargarConsentimientos(pacienteId);
+      renderFicha(pacienteActual, consentimientos);
+    } catch (e) {
+      $('cargando').innerHTML = 'Error al cargar la ficha (' + (e.code || e.message) + ').';
+    }
+  }
+
+  async function cargarConsentimientos(id) {
+    try {
+      const snap = await getDocs(collection(db, 'pacientes', id, 'consentimientos'));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                      .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+    } catch { return []; }
+  }
+
+  function edadDesde(fechaNacIso) {
+    if (!fechaNacIso) return null;
+    const nac = new Date(fechaNacIso);
+    if (isNaN(nac)) return null;
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+    return edad;
+  }
+
+  function fechaCorta(iso) {
+    if (!iso) return '—';
+    const d = iso.toDate ? iso.toDate() : new Date(iso);
+    if (isNaN(d)) return String(iso);
+    return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+  function fechaHora(iso) {
+    if (!iso) return '—';
+    const d = iso.toDate ? iso.toDate() : new Date(iso);
+    if (isNaN(d)) return String(iso);
+    return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+      + ' · ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+  function val(v, mono) {
+    if (!v && v !== 0) return '<span class="dato-valor vacio">No registrado</span>';
+    return '<span class="dato-valor' + (mono ? ' mono' : '') + '">' + esc(v) + '</span>';
+  }
+
+  function renderFicha(p, consentimientos) {
+    const edad = edadDesde(p.fechaNacimiento);
+    const esMenor = edad !== null && edad < 18;
+    const consentimientoOk = p.consentimiento && p.consentimiento.firmado;
+    const cicloEtiqueta = nombresCiclo[p.estadoCiclo] || p.estadoCiclo || 'Registrado';
+
+    let html = '';
+
+    html += '<div class="ficha-cabecera">';
+    html += '<div class="breadcrumb"><a href="pacientes.html">Pacientes</a> <span>›</span> <span>Ficha</span></div>';
+    html += '<div class="ficha-fila">';
+    html += '<div class="ficha-identidad">';
+    html += '<h1>' + esc(p.nombres + ' ' + p.apellidos) + '</h1>';
+    html += '<div class="doc-grande">' + esc(p.tipoDocumento || '') + ' ' + esc(p.numeroDocumento || '') + '</div>';
+    html += '<div class="ficha-chips">';
+    if (edad !== null) {
+      html += '<span class="chip ' + (esMenor ? 'menor">Menor · ' : 'adulto">Adulto · ') + edad + ' años</span>';
+    }
+    html += '<span class="chip ' + (consentimientoOk ? 'firmado">Consentimiento firmado' : 'sinfirma">Consentimiento pendiente') + '</span>';
+    html += '<span class="chip ciclo">' + esc(cicloEtiqueta) + '</span>';
+    html += '</div></div>';
+    html += '<div class="ficha-acciones">';
+    html += '<a class="boton-principal" href="agenda.html?paciente=' + esc(p.id) + '">📅 Nueva cita</a>';
+    html += '<button class="boton-secundario" id="btnEditar">✎ Editar datos</button>';
+    html += '</div></div></div>';
+
+    html += '<div class="ficha-grid"><div>';
+
+    html += '<div class="tarjeta">';
+    html += '<h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 20 20 0 0 1-8.6-3.1 20 20 0 0 1-6-6A20 20 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.4 2.1L8 9.6a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.6.5 2.5.6a2 2 0 0 1 1.7 2z"/></svg>Contacto y ubicación</h2>';
+    html += '<div class="dato-grilla">';
+    html += '<div class="dato"><span class="dato-etiqueta">Teléfono</span>' + val(p.telefono, true) + '</div>';
+    html += '<div class="dato"><span class="dato-etiqueta">WhatsApp</span>' + val(p.whatsapp || p.telefono, true) + '</div>';
+    html += '<div class="dato"><span class="dato-etiqueta">Correo</span>' + val(p.email) + '</div>';
+    html += '<div class="dato"><span class="dato-etiqueta">Ocupación</span>' + val(p.ocupacion) + '</div>';
+    html += '<div class="dato"><span class="dato-etiqueta">Dirección</span>' + val(p.direccion) + '</div>';
+    html += '<div class="dato"><span class="dato-etiqueta">Ciudad</span>' + val(p.ciudad) + '</div>';
+    html += '<div class="dato"><span class="dato-etiqueta">EPS / Aseguradora</span>' + val(p.eps) + '</div>';
+    html += '<div class="dato"><span class="dato-etiqueta">Género</span>' + val(nombresGenero[p.genero] || p.genero) + '</div>';
+    html += '</div></div>';
+
+    html += '<div class="tarjeta">';
+    html += '<h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>Contacto de emergencia</h2>';
+    const em = p.contactoEmergencia || {};
+    html += '<div class="dato-grilla">';
+    html += '<div class="dato"><span class="dato-etiqueta">Nombre</span>' + val(em.nombre) + '</div>';
+    html += '<div class="dato"><span class="dato-etiqueta">Teléfono</span>' + val(em.telefono, true) + '</div>';
+    html += '<div class="dato"><span class="dato-etiqueta">Parentesco</span>' + val(em.parentesco) + '</div>';
+    html += '</div></div>';
+
+    if (p.acudiente) {
+      const a = p.acudiente;
+      html += '<div class="tarjeta">';
+      html += '<h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>Acudiente / Tutor legal</h2>';
+      html += '<div class="dato-grilla">';
+      html += '<div class="dato"><span class="dato-etiqueta">Nombre</span>' + val((a.nombres || '') + ' ' + (a.apellidos || '')) + '</div>';
+      html += '<div class="dato"><span class="dato-etiqueta">Documento</span>' + val((a.tipoDocumento || '') + ' ' + (a.numeroDocumento || ''), true) + '</div>';
+      html += '<div class="dato"><span class="dato-etiqueta">Parentesco</span>' + val(nombresParentesco[a.parentesco] || a.parentesco) + '</div>';
+      html += '<div class="dato"><span class="dato-etiqueta">Teléfono</span>' + val(a.telefono, true) + '</div>';
+      html += '</div>';
+
+      if (p.acudienteHistorico) {
+        const h = p.acudienteHistorico;
+        html += '<div class="archivado">';
+        html += '<h3>Datos de acudiente archivados</h3>';
+        html += '<div class="dato-grilla">';
+        html += '<div class="dato"><span class="dato-etiqueta">Nombre</span>' + val((h.nombres || '') + ' ' + (h.apellidos || '')) + '</div>';
+        html += '<div class="dato"><span class="dato-etiqueta">Documento</span>' + val((h.tipoDocumento || '') + ' ' + (h.numeroDocumento || ''), true) + '</div>';
+        html += '</div>';
+        html += '<div class="meta">Archivado el ' + fechaCorta(h.fechaArchivo) + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+    } else if (p.acudienteHistorico) {
+      const h = p.acudienteHistorico;
+      html += '<div class="tarjeta">';
+      html += '<h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v9H4v-9M2 7h20v5H2zM10 3h4v4h-4z"/></svg>Acudiente archivado</h2>';
+      html += '<div class="dato-grilla">';
+      html += '<div class="dato"><span class="dato-etiqueta">Nombre</span>' + val((h.nombres || '') + ' ' + (h.apellidos || '')) + '</div>';
+      html += '<div class="dato"><span class="dato-etiqueta">Documento</span>' + val((h.tipoDocumento || '') + ' ' + (h.numeroDocumento || ''), true) + '</div>';
+      html += '<div class="dato"><span class="dato-etiqueta">Parentesco</span>' + val(nombresParentesco[h.parentesco] || h.parentesco) + '</div>';
+      html += '<div class="dato"><span class="dato-etiqueta">Fecha de archivo</span>' + val(fechaCorta(h.fechaArchivo)) + '</div>';
+      html += '</div>';
+      html += '<div class="aviso-pronto" style="margin-top:14px">Este paciente ya es mayor de edad. Los datos del acudiente permanecen archivados para trazabilidad clínica.</div>';
+      html += '</div>';
+    }
+
+    html += '<div class="tarjeta">';
+    html += '<h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v5h5M9 15l2 2 4-4M19 21H5V3h9l5 5z"/></svg>Consentimientos informados</h2>';
+    if (consentimientos.length === 0) {
+      html += '<div class="consent-vacio">Sin consentimientos capturados. Usa "Editar datos" para agregar el primero.</div>';
+    } else {
+      html += '<div class="lista-consent">';
+      for (const c of consentimientos) {
+        html += '<div class="consent-linea">';
+        html += '<div class="consent-icono">' + (c.tipo === 'canvas' ? '✍' : '📄') + '</div>';
+        html += '<div class="consent-info">';
+        html += '<div class="tit">' + (c.tipo === 'canvas' ? 'Firma digital' : 'PDF firmado') + ' · v' + esc(c.versionTexto || '—') + '</div>';
+        html += '<div class="meta">Firmado el <strong>' + fechaCorta(c.fecha) + '</strong>';
+        if (c.firmadoPor) html += ' por <strong>' + esc(c.firmadoPor) + '</strong>';
+        if (c.esAcudiente) html += ' <em>(acudiente)</em>';
+        html += '<br>Capturado por ' + esc(c.capturadoPor || '—');
+        if (c.sucursal) html += ' · Sede ' + esc(c.sucursal);
+        html += '</div></div>';
+        if (c.archivoURL) html += '<a href="' + esc(c.archivoURL) + '" target="_blank" rel="noopener">Ver ↗</a>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="tarjeta">';
+    html += '<h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>Historial clínico y comercial</h2>';
+    html += '<div class="aviso-pronto"><strong>Próximamente.</strong> Aquí verás las citas, historias clínicas, ventas, órdenes de trabajo y seguimientos de este paciente a medida que se activen los módulos.</div>';
+    html += '</div>';
+
+    html += '</div>';
+
+    html += '<div>';
+    html += '<div class="tarjeta">';
+    html += '<h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>Línea de tiempo</h2>';
+    html += renderTimeline(p, consentimientos);
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>';
+
+    $('cargando').classList.add('oculto');
+    $('fichaContenido').classList.remove('oculto');
+    $('fichaContenido').innerHTML = html;
+
+    const btnEditar = $('btnEditar');
+    if (btnEditar) {
+      btnEditar.addEventListener('click', () => {
+        window.location.href = 'pacientes.html?editar=' + pacienteId;
+      });
+    }
+  }
+
+  function renderTimeline(p, consentimientos) {
+    const eventos = [];
+
+    if (p.fechaCreacion) {
+      eventos.push({
+        tipo: 'registro',
+        fecha: p.fechaCreacion,
+        titulo: 'Registro del paciente',
+        detalle: (p.sucursalRegistro ? 'Sede ' + p.sucursalRegistro : '')
+      });
+    }
+
+    for (const c of consentimientos) {
+      eventos.push({
+        tipo: 'consentimiento',
+        fecha: c.fecha,
+        titulo: 'Consentimiento firmado',
+        detalle: (c.tipo === 'canvas' ? 'Firma digital' : 'PDF firmado')
+                 + ' · Firmó: ' + (c.firmadoPor || '—')
+                 + (c.esAcudiente ? ' (acudiente)' : '')
+      });
+    }
+
+    if (p.acudienteHistorico && p.acudienteHistorico.fechaArchivo) {
+      eventos.push({
+        tipo: 'archivo',
+        fecha: p.acudienteHistorico.fechaArchivo,
+        titulo: 'Datos de acudiente archivados',
+        detalle: 'Paciente pasó a mayoría de edad'
+      });
+    }
+
+    if (p.fechaModificacion && !esMismaFecha(p.fechaModificacion, p.fechaCreacion)) {
+      eventos.push({
+        tipo: 'edicion',
+        fecha: p.fechaModificacion,
+        titulo: 'Datos actualizados',
+        detalle: 'Última modificación de la ficha'
+      });
+    }
+
+    eventos.sort((a, b) => valorFecha(b.fecha) - valorFecha(a.fecha));
+
+    if (eventos.length === 0) {
+      return '<div class="timeline-vacio">Sin eventos registrados aún.</div>';
+    }
+
+    let html = '<div class="timeline">';
+    for (const ev of eventos) {
+      html += '<div class="timeline-item evento-' + ev.tipo + '">';
+      html += '<div class="timeline-punto"></div>';
+      html += '<div class="timeline-fecha">' + fechaHora(ev.fecha) + '</div>';
+      html += '<div class="timeline-titulo">' + esc(ev.titulo) + '</div>';
+      if (ev.detalle) html += '<div class="timeline-detalle">' + esc(ev.detalle) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function valorFecha(f) {
+    if (!f) return 0;
+    const d = f.toDate ? f.toDate() : new Date(f);
+    return isNaN(d) ? 0 : d.getTime();
+  }
+  function esMismaFecha(a, b) {
+    return Math.abs(valorFecha(a) - valorFecha(b)) < 60000;
+  }
+</script>
+</body>
+</html>
