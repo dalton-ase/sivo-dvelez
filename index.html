@@ -99,6 +99,7 @@
   .kpi::before{content:'';position:absolute;inset:0;border-radius:var(--radio);padding:1px;background:var(--flash);opacity:0;transition:opacity .2s;-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
   .kpi .etiqueta{font-size:.72rem;font-weight:500;color:var(--gris);letter-spacing:.03em;margin-bottom:9px}
   .kpi .valor{font-family:'Spline Sans Mono',monospace;font-size:1.9rem;font-weight:600;line-height:1;font-feature-settings:'tnum'}
+  .kpi .valor.dinero{font-size:1.35rem}
   .kpi .detalle{font-size:.72rem;color:var(--gris);margin-top:8px}
 
   .aviso-desarrollo{background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);padding:34px;text-align:center}
@@ -158,9 +159,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v5h5M19 21H5V3h9l5 5z"/><path d="M9 13h6M9 17h6"/></svg>
         Historias
       </a>
-      <a href="#" class="pendiente" aria-disabled="true">
+      <a href="ventas.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18l-2 12H5L3 7z"/><path d="M8 7a4 4 0 0 1 8 0"/></svg>
-        Ventas <span class="nav-pronto">Pronto</span>
+        Ventas
       </a>
       <a href="#" class="pendiente" aria-disabled="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12a8 8 0 1 1 16 0"/><circle cx="8" cy="14" r="3.4"/><circle cx="16" cy="14" r="3.4"/><path d="M11.4 14h1.2"/></svg>
@@ -229,6 +230,11 @@
         <p class="detalle" id="kpiCitasDetalle">En la sede activa</p>
       </article>
       <article class="kpi">
+        <p class="etiqueta">Ventas del mes</p>
+        <p class="valor dinero" id="kpiVentas">—</p>
+        <p class="detalle" id="kpiVentasDetalle">Abonos recibidos</p>
+      </article>
+      <article class="kpi">
         <p class="etiqueta">Órdenes en producción</p>
         <p class="valor">—</p>
         <p class="detalle">Módulo de Órdenes en desarrollo</p>
@@ -238,26 +244,22 @@
         <p class="valor">—</p>
         <p class="detalle">Módulo de Seguimientos en desarrollo</p>
       </article>
-      <article class="kpi">
-        <p class="etiqueta">Ventas del mes</p>
-        <p class="valor">—</p>
-        <p class="detalle">Módulo de Ventas en desarrollo</p>
-      </article>
     </section>
 
     <div class="aviso-desarrollo">
       <div class="lente" aria-hidden="true"></div>
       <h2>SIVO está en construcción — Fase 1</h2>
       <p>
-        La infraestructura, la seguridad, la administración, los pacientes, la agenda
-        y la historia clínica ya están operativos. Los módulos restantes
-        (Ventas, Órdenes, Laboratorio, Inventario y Seguimientos)
+        Infraestructura, seguridad, administración, pacientes, agenda, historia clínica
+        y ventas ya están operativos. Los módulos restantes
+        (Órdenes, Laboratorio, Inventario y Seguimientos)
         se irán activando en este tablero a medida que se desarrollen.
       </p>
       <div class="modulos-listos" id="accesosRapidos">
         <a href="pacientes.html">🧑 Pacientes</a>
         <a href="agenda.html">📅 Agenda</a>
         <a href="historia_clinica.html" id="accesoHistorias">🩺 Historias</a>
+        <a href="ventas.html">💰 Ventas</a>
         <a href="configuracion.html" id="accesoConfiguracion">⚙ Configuración</a>
         <a href="usuarios.html" id="accesoUsuarios">👥 Usuarios y roles</a>
       </div>
@@ -294,6 +296,7 @@
     recepcionista: 'Recepcionista',
     tecnico_lab: 'Técnico de Laboratorio'
   };
+  const COP = new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 });
 
   let perfilActual = null;
   let sedesDisponibles = [];
@@ -397,7 +400,7 @@
 
     await cargarSedes();
     aplicarSedeActiva();
-    await cargarKpiCitas();
+    await Promise.all([cargarKpiCitas(), cargarKpiVentas()]);
 
     try {
       const emp = await getDoc(doc(db, 'configuracion', 'empresa'));
@@ -459,6 +462,26 @@
     } catch { $('kpiCitas').textContent = '—'; }
   }
 
+  async function cargarKpiVentas() {
+    const sede = sedeGuardada();
+    if (!sede) { $('kpiVentas').textContent = '—'; return; }
+    try {
+      const snap = await getDocs(query(collection(db, 'ventas'), where('sucursalId', '==', sede)));
+      const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).getTime();
+      let suma = 0, numAbonos = 0;
+      for (const d of snap.docs) {
+        const v = d.data();
+        if (v.estado === 'anulada') continue;
+        for (const a of (v.abonos || [])) {
+          const f = new Date(a.fecha || 0).getTime();
+          if (f >= inicioMes) { suma += Number(a.valor) || 0; numAbonos++; }
+        }
+      }
+      $('kpiVentas').textContent = COP.format(suma);
+      $('kpiVentasDetalle').textContent = numAbonos + ' abono' + (numAbonos===1?'':'s') + ' · sede ' + sede + ' · este mes';
+    } catch { $('kpiVentas').textContent = '—'; }
+  }
+
   $('btnSede').addEventListener('click', () => {
     const abierto = document.querySelector('.sede-menu');
     if (abierto) { abierto.remove(); return; }
@@ -474,7 +497,7 @@
         try { localStorage.setItem('sivo_sede_activa', sede.id); } catch {}
         aplicarSedeActiva();
         menu.remove();
-        await cargarKpiCitas();
+        await Promise.all([cargarKpiCitas(), cargarKpiVentas()]);
       });
       menu.appendChild(opcion);
     }
