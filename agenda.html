@@ -53,7 +53,6 @@
   .boton-google{display:inline-flex;align-items:center;justify-content:center;gap:11px;width:100%;padding:13px 20px;margin-top:22px;background:var(--petroleo);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Lexend';font-size:.92rem;font-weight:600}
   .aviso-denegado{background:var(--rojo-tinte);color:var(--rojo);border:1px solid var(--rojo);border-radius:10px;padding:14px 16px;font-size:.84rem;margin-top:22px;line-height:1.5}
 
-  /* ─── barra de control ─── */
   .barra{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
   h1{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 700;font-size:1.5rem}
   .nav-fecha{display:flex;align-items:center;gap:6px}
@@ -65,11 +64,12 @@
   .selector-vista{display:flex;background:var(--superficie);border:1px solid var(--niebla);border-radius:9px;overflow:hidden;margin-left:auto}
   .selector-vista button{background:none;border:none;padding:8px 18px;cursor:pointer;font-family:'Lexend';font-size:.78rem;font-weight:600;color:var(--gris);transition:all .15s}
   .selector-vista button.activo{background:var(--petroleo);color:#fff}
-  .boton-principal{background:var(--petroleo);color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-family:'Lexend';font-size:.84rem;font-weight:600;transition:background .15s;display:inline-flex;align-items:center;gap:7px}
+  .boton-principal{background:var(--petroleo);color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-family:'Lexend';font-size:.84rem;font-weight:600;transition:background .15s;display:inline-flex;align-items:center;gap:7px;text-decoration:none}
   .boton-principal:hover{background:var(--petroleo-oscuro)}
   .boton-principal:disabled{opacity:.55;cursor:wait}
+  .boton-atender{background:var(--violeta)}
+  .boton-atender:hover{background:#4A3FC4}
 
-  /* ─── vista día ─── */
   .panel{background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);overflow:hidden}
   .lista-dia{display:flex;flex-direction:column}
   .cita-linea{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--niebla);cursor:pointer;transition:background .12s}
@@ -91,7 +91,6 @@
   .chip.reprogramada{background:var(--ambar-tinte);color:var(--ambar)}
   .vacio{padding:42px 22px;text-align:center;color:var(--gris);font-size:.86rem;line-height:1.6}
 
-  /* ─── vista semana ─── */
   .semana{display:grid;grid-template-columns:repeat(7,1fr);min-height:420px}
   .dia-col{border-right:1px solid var(--niebla);display:flex;flex-direction:column}
   .dia-col:last-child{border-right:none}
@@ -109,7 +108,6 @@
   .mini-cita .h{font-family:'Spline Sans Mono',monospace;font-size:.68rem;font-weight:600}
   .mini-cita .n{font-size:.72rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 
-  /* ─── modal ─── */
   .modal-fondo{position:fixed;inset:0;background:rgba(23,26,30,.45);display:grid;place-items:center;padding:20px;z-index:50}
   .modal{background:var(--superficie);border-radius:var(--radio);box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:640px;max-height:calc(100vh - 40px);overflow-y:auto}
   .modal-cabecera{position:sticky;top:0;background:var(--superficie);border-bottom:1px solid var(--niebla);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;z-index:5}
@@ -275,6 +273,7 @@
               <option value="cancelada">Cancelada</option>
               <option value="reprogramada">Reprogramada</option>
             </select>
+            <span class="pista">Para marcar "Atendida" con historia clínica, usa el botón 🩺 Atender</span>
           </div>
           <div class="campo ancho">
             <label for="fObservaciones">Observaciones</label>
@@ -292,6 +291,7 @@
     <div class="modal-pie">
       <span class="mensaje-form" id="msjForm" role="status"></span>
       <div class="acciones-pie">
+        <a class="boton-principal boton-atender oculto" id="btnAtender" href="#">🩺 Atender</a>
         <button type="button" class="boton-secundario" id="btnCancelar">Cancelar</button>
         <button type="button" class="boton-principal" id="btnGuardar">Guardar cita</button>
       </div>
@@ -706,6 +706,7 @@
     $('resultados').classList.add('oculto');
     $('campoEstado').classList.toggle('oculto', !citaId);
     $('avisoNotificacion').classList.toggle('oculto', !!citaId);
+    $('btnAtender').classList.add('oculto');
     poblarTipos();
     poblarOptometras();
 
@@ -734,6 +735,13 @@
       $('fCanal').value = c.canalOrigen || 'presencial';
       $('fEstado').value = c.estado || 'agendada';
       $('fObservaciones').value = c.observaciones || '';
+
+      // 🩺 Atender: solo optómetras, sobre citas aún no cerradas
+      if (perfilActual.rol === 'optometra' && !['cancelada','no_asistio'].includes(c.estado)) {
+        $('btnAtender').href = 'historia_clinica.html?cita=' + citaId;
+        $('btnAtender').textContent = c.estado === 'atendida' ? '🩺 Ver historia' : '🩺 Atender';
+        $('btnAtender').classList.remove('oculto');
+      }
     } else {
       $('modalTitulo').textContent = 'Nueva cita';
       $('fFecha').value = fechaISO(fechaBase);
@@ -793,7 +801,6 @@
 
     const paciente = pacientes.find(p => p.id === $('pacienteElegidoId').value);
     const optometra = optometras.find(o => o.uid === optometraId);
-    const tipoObj = tiposCita.find(t => t.id === $('fTipo').value);
 
     try {
       const datos = {
