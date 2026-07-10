@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIVO — Historia Clínica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Lexend:wght@300;400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fondo:#F6F8F8;--superficie:#FFFFFF;--niebla:#E4EAEA;
+    --grafito:#171A1E;--gris:#5C666B;
+    --petroleo:#0C7268;--petroleo-oscuro:#0A5B53;--petroleo-tinte:#E3F2F0;
+    --violeta:#5B4FD8;--violeta-tinte:#EDEAFB;
+    --ambar:#B45309;--ambar-tinte:#FBEEDC;
+    --rojo:#C2362F;--rojo-tinte:#FAE7E5;
+    --exito:#12805C;--exito-tinte:#E5F5EC;
+    --flash:linear-gradient(90deg,#2FD9A8 0%,#4BB8D8 50%,#7C6CF0 100%);
+    --radio:12px;
+    --sombra:0 1px 2px rgba(23,26,30,.05),0 4px 16px rgba(23,26,30,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Lexend',sans-serif;background:var(--fondo);color:var(--grafito);min-height:100vh}
+  :focus-visible{outline:none;box-shadow:0 0 0 2px var(--superficie),0 0 0 4px var(--petroleo)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  .oculto{display:none!important}
+
+  header{background:var(--superficie);border-bottom:1px solid var(--niebla);padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .lente{width:34px;height:34px;border-radius:50%;background:conic-gradient(from 210deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);display:grid;place-items:center;flex-shrink:0}
+  .lente::after{content:'';width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#2A3138 0%,#171A1E 60%)}
+  .wordmark{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 122,'wght' 800;font-size:1.2rem;letter-spacing:.04em;line-height:1}
+  .wordmark small{display:block;font-family:'Lexend';font-weight:400;font-size:.55rem;letter-spacing:.14em;color:var(--gris);text-transform:uppercase;margin-top:2px;font-variation-settings:normal}
+  .cabecera-derecha{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--gris);flex-wrap:wrap;justify-content:flex-end}
+  .cabecera-derecha strong{color:var(--grafito);font-weight:600}
+  .boton-secundario{background:var(--superficie);color:var(--gris);border:1px solid var(--niebla);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:'Lexend';font-size:.76rem;font-weight:500;transition:border-color .15s,color .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .boton-secundario:hover{border-color:var(--gris);color:var(--grafito)}
+  .boton-principal{background:var(--petroleo);color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-family:'Lexend';font-size:.84rem;font-weight:600;transition:background .15s;display:inline-flex;align-items:center;gap:7px;text-decoration:none}
+  .boton-principal:hover{background:var(--petroleo-oscuro)}
+  .boton-principal:disabled{opacity:.55;cursor:wait}
+
+  main{max-width:1080px;margin:0 auto;padding:24px 24px 60px}
+  h1{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 700;font-size:1.5rem}
+
+  .portal{max-width:420px;margin:60px auto;text-align:center;padding:0 20px}
+  .portal .lente{width:52px;height:52px;margin:0 auto 18px}.portal .lente::after{width:38px;height:38px}
+  .boton-google{display:inline-flex;align-items:center;justify-content:center;gap:11px;width:100%;padding:13px 20px;margin-top:22px;background:var(--petroleo);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Lexend';font-size:.92rem;font-weight:600}
+  .aviso-denegado{background:var(--rojo-tinte);color:var(--rojo);border:1px solid var(--rojo);border-radius:10px;padding:14px 16px;font-size:.84rem;margin-top:22px;line-height:1.5}
+  .cargando{padding:70px 20px;text-align:center;color:var(--gris);font-size:.86rem}
+
+  .cinta-legal{background:var(--ambar-tinte);color:var(--ambar);border:1px solid var(--ambar);border-radius:10px;padding:12px 16px;font-size:.78rem;line-height:1.5;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start}
+  .cinta-legal svg{width:17px;height:17px;flex-shrink:0;margin-top:1px}
+
+  .paciente-banda{background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);padding:18px 22px;margin-bottom:20px;position:relative;overflow:hidden;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  .paciente-banda::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--flash)}
+  .paciente-banda h2{font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 700;font-size:1.25rem}
+  .paciente-banda .doc{font-family:'Spline Sans Mono',monospace;font-size:.8rem;color:var(--gris)}
+  .paciente-banda .meta{font-size:.74rem;color:var(--gris);margin-top:3px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;font-weight:600;padding:3px 11px;border-radius:20px;white-space:nowrap;margin-left:auto}
+  .chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+  .chip.inmutable{background:var(--violeta-tinte);color:var(--violeta)}
+
+  .tarjeta{background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);padding:22px 24px;margin-bottom:18px}
+  .tarjeta h3{font-size:.76rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--gris);margin-bottom:15px;padding-bottom:7px;border-bottom:1px solid var(--niebla)}
+  .grilla{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grilla.tres{grid-template-columns:1fr 1fr 1fr}
+  .campo{display:flex;flex-direction:column;gap:4px}
+  .campo.ancho{grid-column:1 / -1}
+  .campo label{font-size:.66rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+  .campo input, .campo select, .campo textarea{font-family:'Lexend';font-size:.86rem;color:var(--grafito);background:var(--fondo);border:1px solid var(--niebla);border-radius:8px;padding:9px 11px;transition:border-color .15s}
+  .campo input.mono{font-family:'Spline Sans Mono',monospace;font-size:.82rem}
+  .campo input:focus, .campo select:focus, .campo textarea:focus{border-color:var(--petroleo);outline:none}
+  .obligatorio::after{content:' *';color:var(--rojo)}
+  textarea{resize:vertical;min-height:60px}
+
+  /* tabla de refracción OD/OI */
+  .tabla-ojos{width:100%;border-collapse:collapse}
+  .tabla-ojos th{font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);padding:6px 8px;text-align:center;border-bottom:1px solid var(--niebla)}
+  .tabla-ojos th.ojo{text-align:left;width:56px}
+  .tabla-ojos td{padding:6px 5px}
+  .tabla-ojos td.ojo{font-family:'Spline Sans Mono',monospace;font-weight:600;font-size:.82rem;color:var(--petroleo-oscuro)}
+  .tabla-ojos input{width:100%;font-family:'Spline Sans Mono',monospace;font-size:.82rem;text-align:center;background:var(--fondo);border:1px solid var(--niebla);border-radius:7px;padding:8px 5px}
+  .tabla-ojos input:focus{border-color:var(--petroleo);outline:none}
+
+  .lista-diagnosticos{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .diag-fila{display:flex;gap:8px;align-items:center}
+  .diag-fila input.codigo{width:110px;font-family:'Spline Sans Mono',monospace;font-size:.8rem;text-transform:uppercase}
+  .diag-fila input{background:var(--fondo);border:1px solid var(--niebla);border-radius:8px;padding:9px 11px;font-family:'Lexend';font-size:.84rem;flex:1}
+  .diag-fila button{background:none;border:none;color:var(--rojo);cursor:pointer;font-size:1rem;padding:4px 8px}
+  .enlace-agregar{background:none;border:1px dashed var(--niebla);color:var(--petroleo);border-radius:8px;padding:8px 14px;cursor:pointer;font-family:'Lexend';font-size:.78rem;font-weight:600;width:100%}
+  .enlace-agregar:hover{border-color:var(--petroleo);background:var(--petroleo-tinte)}
+
+  .pie-acciones{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);padding:16px 22px;position:sticky;bottom:12px}
+  .mensaje{font-size:.78rem;font-weight:500}
+  .mensaje.ok{color:var(--exito)}
+  .mensaje.error{color:var(--rojo)}
+
+  /* vista lectura */
+  .dato-grilla{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+  .dato{display:flex;flex-direction:column;gap:2px}
+  .dato-etiqueta{font-size:.63rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+  .dato-valor{font-size:.88rem;font-weight:500;line-height:1.4;white-space:pre-wrap}
+  .dato-valor.mono{font-family:'Spline Sans Mono',monospace;font-size:.83rem}
+  .dato-valor.vacio{color:var(--gris);font-weight:400;font-style:italic}
+  .tabla-lectura{width:100%;border-collapse:collapse;font-size:.83rem}
+  .tabla-lectura th{font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);padding:7px 9px;border-bottom:1px solid var(--niebla);text-align:center}
+  .tabla-lectura th.ojo{text-align:left}
+  .tabla-lectura td{padding:8px 9px;text-align:center;font-family:'Spline Sans Mono',monospace;border-bottom:1px solid var(--niebla)}
+  .tabla-lectura td.ojo{font-weight:600;text-align:left;color:var(--petroleo-oscuro)}
+  .tabla-lectura tr:last-child td{border-bottom:none}
+
+  .nota-item{border:1px solid var(--niebla);border-left:3px solid var(--ambar);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:var(--fondo)}
+  .nota-item .meta{font-size:.68rem;color:var(--gris);margin-bottom:5px;font-family:'Spline Sans Mono',monospace}
+  .nota-item .texto{font-size:.85rem;line-height:1.5;white-space:pre-wrap}
+
+  /* listado */
+  .panel{background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);overflow:hidden}
+  .buscar{display:flex;align-items:center;gap:9px;background:var(--superficie);border:1px solid var(--niebla);border-radius:10px;padding:8px 14px;flex:1;min-width:240px}
+  .buscar input{flex:1;border:none;background:none;font-family:'Lexend';font-size:.86rem;outline:none}
+  .barra{display:flex;gap:12px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
+  table.listado{width:100%;border-collapse:collapse;font-size:.84rem}
+  table.listado thead th{text-align:left;font-size:.64rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);padding:11px 20px;border-bottom:1px solid var(--niebla);background:var(--fondo)}
+  table.listado tbody td{padding:12px 20px;border-bottom:1px solid var(--niebla)}
+  table.listado tbody tr{cursor:pointer;transition:background .12s}
+  table.listado tbody tr:hover{background:var(--fondo)}
+  table.listado tbody tr:last-child td{border-bottom:none}
+  .vacio{padding:40px 20px;text-align:center;color:var(--gris);font-size:.85rem;line-height:1.6}
+  .mono{font-family:'Spline Sans Mono',monospace;font-size:.78rem;color:var(--gris)}
+
+  /* impresión */
+  #zonaImpresion{display:none}
+  @media print{
+    body > *{display:none!important}
+    #zonaImpresion{display:block!important;font-family:'Lexend',sans-serif;color:#111;padding:10mm}
+    .imp-cabecera{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0C7268;padding-bottom:10px;margin-bottom:14px}
+    .imp-cabecera h1{font-size:18pt;margin:0;color:#0C7268}
+    .imp-cabecera .emp{font-size:9pt;line-height:1.5;text-align:right}
+    .imp-titulo{font-size:13pt;font-weight:700;margin:12px 0 8px;color:#0C7268}
+    .imp-datos{font-size:10pt;line-height:1.7;margin-bottom:10px}
+    .imp-tabla{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:10pt}
+    .imp-tabla th,.imp-tabla td{border:1px solid #999;padding:6px 8px;text-align:center}
+    .imp-tabla th{background:#E3F2F0}
+    .imp-obs{font-size:9.5pt;line-height:1.6;margin-bottom:14px}
+    .imp-firma{margin-top:34px;display:flex;justify-content:space-between;font-size:9pt}
+    .imp-firma .linea{border-top:1px solid #111;padding-top:5px;width:220px;text-align:center}
+    .imp-pie{margin-top:24px;font-size:7.5pt;color:#666;text-align:center;border-top:1px solid #ccc;padding-top:8px}
+  }
+
+  @media (max-width:760px){
+    .grilla,.grilla.tres,.dato-grilla{grid-template-columns:1fr}
+    main{padding:18px 14px 40px}
+  }
+</style>
+</head>
+<body>
+
+<div class="portal oculto" id="portal">
+  <div class="lente" aria-hidden="true"></div>
+  <h1 class="wordmark" style="font-size:2rem">SIVO<small>Visión Óptica Integral</small></h1>
+  <p style="font-size:.85rem;color:var(--gris);margin:16px 0 20px;line-height:1.5">Historias clínicas.<br>Acceso exclusivo de optómetras y SuperAdmin.</p>
+  <button class="boton-google" id="btnEntrar">Entrar con Google</button>
+  <div class="aviso-denegado oculto" id="avisoDenegado"></div>
+</div>
+
+<div id="app" class="oculto">
+  <header>
+    <div class="lente" aria-hidden="true"></div>
+    <div class="wordmark">SIVO<small>Historia Clínica</small></div>
+    <div class="cabecera-derecha">
+      <span><strong id="usuarioNombre"></strong> · <span id="usuarioRol"></span></span>
+      <a href="agenda.html" class="boton-secundario">← Agenda</a>
+      <a href="index.html" class="boton-secundario">Tablero</a>
+      <button class="boton-secundario" id="btnSalir">Salir</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="cargando" class="cargando">Cargando…</div>
+    <div id="contenido" class="oculto"></div>
+  </main>
+</div>
+
+<div id="zonaImpresion"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, updateDoc, addDoc, collection, getDocs, query, where, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdUihN1s_SqdKEJAoobOkOjQmVVk0foyQ",
+    authDomain: "sivo-dvelez.firebaseapp.com",
+    projectId: "sivo-dvelez",
+    storageBucket: "sivo-dvelez.firebasestorage.app",
+    messagingSenderId: "686206424202",
+    appId: "1:686206424202:web:e6fc32b40c7183ea108973"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const proveedor = new GoogleAuthProvider();
+
+  const $ = (id) => document.getElementById(id);
+  const nombresRol = { superadmin:'Súper Administrador', optometra:'Optómetra' };
+  const CAMPOS_OJO = ['esfera','cilindro','eje','adicion'];
+
+  let perfilActual = null;
+  let empresa = {};
+  let cita = null, paciente = null, historia = null;
+  const params = new URLSearchParams(window.location.search);
+
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+  function fechaHora(f){ if(!f) return '—'; const d=f.toDate?f.toDate():new Date(f); if(isNaN(d)) return String(f);
+    return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}); }
+  function edadDesde(f){ if(!f) return null; const n=new Date(f); if(isNaN(n)) return null; const h=new Date();
+    let e=h.getFullYear()-n.getFullYear(); const m=h.getMonth()-n.getMonth();
+    if(m<0||(m===0&&h.getDate()<n.getDate())) e--; return e; }
+  function v(x){ return (x===undefined||x===null||x==='')?'—':x; }
+
+  // ═════ acceso ═════
+  $('btnEntrar').addEventListener('click', async () => {
+    $('avisoDenegado').classList.add('oculto');
+    try { await signInWithPopup(auth, proveedor); }
+    catch (e) {
+      $('avisoDenegado').textContent = 'No se pudo iniciar sesión (' + e.code + ').';
+      $('avisoDenegado').classList.remove('oculto');
+    }
+  });
+  $('btnSalir').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (usuario) => {
+    if (!usuario) { $('portal').classList.remove('oculto'); $('app').classList.add('oculto'); return; }
+    try {
+      const perfil = await getDoc(doc(db, 'usuarios', usuario.uid));
+      const d = perfil.exists() ? perfil.data() : null;
+      if (d && d.estado === 'activo' && (d.rol === 'optometra' || d.rol === 'superadmin')) {
+        perfilActual = { uid: usuario.uid, ...d };
+        $('usuarioNombre').textContent = perfilActual.nombre || '';
+        $('usuarioRol').textContent = nombresRol[perfilActual.rol] || perfilActual.rol;
+        $('portal').classList.add('oculto');
+        $('app').classList.remove('oculto');
+        await cargarEmpresa();
+        await enrutar();
+      } else {
+        denegar('Las historias clínicas son de acceso restringido: solo optómetras y el SuperAdmin (Res. 1995/1999).');
+      }
+    } catch (e) {
+      denegar('Acceso denegado: esta cuenta no está autorizada en SIVO.');
+    }
+  });
+  function denegar(m){ signOut(auth); $('avisoDenegado').textContent=m; $('avisoDenegado').classList.remove('oculto');
+    $('portal').classList.remove('oculto'); $('app').classList.add('oculto'); }
+
+  async function cargarEmpresa(){
+    try { const s = await getDoc(doc(db,'configuracion','empresa')); if (s.exists()) empresa = s.data(); } catch {}
+  }
+
+  // ═════ enrutamiento ═════
+  async function enrutar(){
+    const citaId = params.get('cita');
+    const historiaId = params.get('id');
+    if (citaId) await modoCrear(citaId);
+    else if (historiaId) await modoVer(historiaId);
+    else await modoListado();
+  }
+
+  // ═════ MODO CREAR (desde cita) ═════
+  async function modoCrear(citaId){
+    if (perfilActual.rol !== 'optometra') {
+      $('cargando').innerHTML = 'Solo los optómetras pueden crear historias clínicas (Res. 1995/1999). <a href="historia_clinica.html" style="color:var(--petroleo)">Ver historias</a>';
+      return;
+    }
+    const cSnap = await getDoc(doc(db,'citas',citaId)).catch(()=>null);
+    if (!cSnap || !cSnap.exists()) { $('cargando').textContent = 'Cita no encontrada.'; return; }
+    cita = { id: cSnap.id, ...cSnap.data() };
+
+    // ¿ya tiene historia?
+    const existente = await getDocs(query(collection(db,'historias_clinicas'), where('citaId','==',citaId))).catch(()=>null);
+    if (existente && !existente.empty) {
+      window.location.href = 'historia_clinica.html?id=' + existente.docs[0].id;
+      return;
+    }
+
+    const pSnap = await getDoc(doc(db,'pacientes',cita.pacienteId)).catch(()=>null);
+    paciente = pSnap && pSnap.exists() ? { id: pSnap.id, ...pSnap.data() } : null;
+    if (!paciente) { $('cargando').textContent = 'Paciente de la cita no encontrado.'; return; }
+
+    renderFormulario();
+  }
+
+  function filaOjos(prefijo, conAdicion){
+    let h = '<table class="tabla-ojos"><thead><tr><th class="ojo"></th><th>Esfera</th><th>Cilindro</th><th>Eje</th>' + (conAdicion?'<th>Adición</th>':'') + '</tr></thead><tbody>';
+    for (const ojo of ['od','oi']) {
+      h += '<tr><td class="ojo">' + ojo.toUpperCase() + '</td>';
+      h += '<td><input id="' + prefijo + '_' + ojo + '_esfera" placeholder="0.00"></td>';
+      h += '<td><input id="' + prefijo + '_' + ojo + '_cilindro" placeholder="0.00"></td>';
+      h += '<td><input id="' + prefijo + '_' + ojo + '_eje" placeholder="0°"></td>';
+      if (conAdicion) h += '<td><input id="' + prefijo + '_' + ojo + '_adicion" placeholder="—"></td>';
+      h += '</tr>';
+    }
+    return h + '</tbody></table>';
+  }
+
+  function renderFormulario(){
+    const edad = edadDesde(paciente.fechaNacimiento);
+    let h = '';
+    h += '<div class="cinta-legal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>';
+    h += '<span><strong>Registro clínico inmutable (Res. 1995/1999).</strong> Al guardar, esta historia no podrá editarse ni eliminarse por nadie. Revisa cuidadosamente antes de firmar. Las correcciones posteriores solo serán posibles mediante notas aclaratorias.</span></div>';
+
+    h += '<div class="paciente-banda"><div>';
+    h += '<h2>' + esc(paciente.nombres + ' ' + paciente.apellidos) + '</h2>';
+    h += '<div class="doc">' + esc(paciente.tipoDocumento||'') + ' ' + esc(paciente.numeroDocumento||'') + (edad!==null?' · '+edad+' años':'') + '</div>';
+    h += '<div class="meta">Cita: ' + esc(cita.fecha||'') + ' ' + esc(cita.hora||'') + ' · Sede ' + esc(cita.sucursalId||'') + ' · EPS: ' + esc(paciente.eps||'—') + '</div>';
+    h += '</div><span class="chip inmutable">Nueva historia</span></div>';
+
+    h += '<div class="tarjeta"><h3>Motivo y antecedentes</h3><div class="grilla">';
+    h += '<div class="campo ancho"><label class="obligatorio" for="fMotivo">Motivo de consulta</label><textarea id="fMotivo"></textarea></div>';
+    h += '<div class="campo"><label for="fAntPersonales">Antecedentes personales</label><textarea id="fAntPersonales"></textarea></div>';
+    h += '<div class="campo"><label for="fAntFamiliares">Antecedentes familiares</label><textarea id="fAntFamiliares"></textarea></div>';
+    h += '<div class="campo ancho"><label for="fAntOculares">Antecedentes oculares (cirugías, traumas, uso de corrección previa)</label><textarea id="fAntOculares"></textarea></div>';
+    h += '</div></div>';
+
+    h += '<div class="tarjeta"><h3>Agudeza visual</h3><div class="grilla">';
+    h += '<div class="campo"><label>Sin corrección</label><table class="tabla-ojos"><tbody>';
+    h += '<tr><td class="ojo">OD</td><td><input id="av_sc_od" class="mono" placeholder="20/—"></td></tr>';
+    h += '<tr><td class="ojo">OI</td><td><input id="av_sc_oi" class="mono" placeholder="20/—"></td></tr></tbody></table></div>';
+    h += '<div class="campo"><label>Con corrección</label><table class="tabla-ojos"><tbody>';
+    h += '<tr><td class="ojo">OD</td><td><input id="av_cc_od" class="mono" placeholder="20/—"></td></tr>';
+    h += '<tr><td class="ojo">OI</td><td><input id="av_cc_oi" class="mono" placeholder="20/—"></td></tr></tbody></table></div>';
+    h += '</div></div>';
+
+    h += '<div class="tarjeta"><h3>Refracción</h3>' + filaOjos('ref', true);
+    h += '<div class="grilla tres" style="margin-top:12px">';
+    h += '<div class="campo"><label for="fDP">Distancia pupilar (mm)</label><input id="fDP" class="mono" placeholder="Ej.: 62"></div>';
+    h += '<div class="campo"><label for="fQOD">Queratometría OD</label><input id="fQOD" class="mono"></div>';
+    h += '<div class="campo"><label for="fQOI">Queratometría OI</label><input id="fQOI" class="mono"></div>';
+    h += '</div></div>';
+
+    h += '<div class="tarjeta"><h3>Examen físico ocular</h3><div class="grilla">';
+    h += '<div class="campo"><label for="fBio">Biomicroscopia (segmento anterior)</label><textarea id="fBio"></textarea></div>';
+    h += '<div class="campo"><label for="fOft">Oftalmoscopia (fondo de ojo)</label><textarea id="fOft"></textarea></div>';
+    h += '</div></div>';
+
+    h += '<div class="tarjeta"><h3>Diagnósticos (CIE-10)</h3>';
+    h += '<div class="lista-diagnosticos" id="listaDiag"></div>';
+    h += '<button type="button" class="enlace-agregar" id="btnAgregarDiag">+ Agregar diagnóstico</button></div>';
+
+    h += '<div class="tarjeta"><h3>Fórmula final (prescripción)</h3>' + filaOjos('rx', true);
+    h += '<div class="grilla tres" style="margin-top:12px">';
+    h += '<div class="campo"><label for="fRxDP">DP fórmula (mm)</label><input id="fRxDP" class="mono"></div>';
+    h += '<div class="campo"><label for="fTipoLente">Tipo de lente</label><select id="fTipoLente"><option value="">—</option><option>Monofocal</option><option>Bifocal</option><option>Progresivo</option><option>Ocupacional</option><option>Lente de contacto</option></select></div>';
+    h += '<div class="campo"><label for="fMaterial">Material sugerido</label><input id="fMaterial" placeholder="Ej.: Policarbonato"></div>';
+    h += '<div class="campo ancho"><label for="fTratamientos">Tratamientos (antirreflejo, filtro azul, fotocromático…)</label><input id="fTratamientos"></div>';
+    h += '</div></div>';
+
+    h += '<div class="tarjeta"><h3>Plan y observaciones</h3><div class="grilla">';
+    h += '<div class="campo"><label for="fPlan">Plan de tratamiento / conducta</label><textarea id="fPlan"></textarea></div>';
+    h += '<div class="campo"><label for="fControl">Próximo control / remisión</label><textarea id="fControl"></textarea></div>';
+    h += '<div class="campo ancho"><label for="fObs">Observaciones generales</label><textarea id="fObs"></textarea></div>';
+    h += '</div></div>';
+
+    h += '<div class="pie-acciones"><span class="mensaje" id="msj"></span>';
+    h += '<div style="margin-left:auto;display:flex;gap:9px">';
+    h += '<a href="agenda.html" class="boton-secundario">Cancelar</a>';
+    h += '<button class="boton-principal" id="btnGuardar">🔒 Firmar y guardar historia</button>';
+    h += '</div></div>';
+
+    $('cargando').classList.add('oculto');
+    $('contenido').classList.remove('oculto');
+    $('contenido').innerHTML = h;
+
+    agregarDiag();
+    $('btnAgregarDiag').addEventListener('click', agregarDiag);
+    $('btnGuardar').addEventListener('click', guardarHistoria);
+  }
+
+  function agregarDiag(){
+    const fila = document.createElement('div');
+    fila.className = 'diag-fila';
+    fila.innerHTML = '<input class="codigo" placeholder="H52.1"><input class="descripcion" placeholder="Descripción del diagnóstico"><button type="button" title="Quitar">✕</button>';
+    fila.querySelector('button').addEventListener('click', () => fila.remove());
+    $('listaDiag').appendChild(fila);
+  }
+
+  function leerOjos(prefijo){
+    const r = {};
+    for (const ojo of ['od','oi']) {
+      r[ojo] = {};
+      for (const c of CAMPOS_OJO) {
+        const el = $(prefijo + '_' + ojo + '_' + c);
+        if (el) r[ojo][c] = el.value.trim();
+      }
+    }
+    return r;
+  }
+
+  async function guardarHistoria(){
+    const msj = $('msj');
+    msj.className = 'mensaje';
+    if (!$('fMotivo').value.trim()) {
+      msj.classList.add('error'); msj.textContent = 'El motivo de consulta es obligatorio.'; return;
+    }
+    const rx = leerOjos('rx');
+    if (!rx.od.esfera && !rx.oi.esfera && !confirm('La fórmula final está vacía. ¿Guardar la historia sin prescripción?')) return;
+    if (!confirm('⚠️ La historia quedará INMUTABLE: no podrá editarse ni borrarse jamás.\n\n¿Confirmas que los datos son correctos y deseas firmarla?')) return;
+
+    $('btnGuardar').disabled = true;
+    msj.textContent = 'Guardando…';
+
+    const diagnosticos = Array.from(document.querySelectorAll('.diag-fila')).map(f => ({
+      codigo: f.querySelector('.codigo').value.trim().toUpperCase(),
+      descripcion: f.querySelector('.descripcion').value.trim()
+    })).filter(d => d.codigo || d.descripcion);
+
+    try {
+      const datos = {
+        pacienteId: paciente.id,
+        pacienteNombre: paciente.nombres + ' ' + paciente.apellidos,
+        pacienteDocumento: (paciente.tipoDocumento||'') + ' ' + (paciente.numeroDocumento||''),
+        citaId: cita.id,
+        sucursalId: cita.sucursalId || '',
+        optometraId: perfilActual.uid,
+        optometraNombre: perfilActual.nombre || '',
+        registroProfesional: perfilActual.registroProfesional || '',
+        fechaAtencion: new Date().toISOString(),
+        motivoConsulta: $('fMotivo').value.trim(),
+        antecedentes: {
+          personales: $('fAntPersonales').value.trim(),
+          familiares: $('fAntFamiliares').value.trim(),
+          oculares: $('fAntOculares').value.trim()
+        },
+        agudezaVisual: {
+          sinCorreccion: { od: $('av_sc_od').value.trim(), oi: $('av_sc_oi').value.trim() },
+          conCorreccion: { od: $('av_cc_od').value.trim(), oi: $('av_cc_oi').value.trim() }
+        },
+        refraccion: { ...leerOjos('ref'), distanciaPupilar: $('fDP').value.trim() },
+        queratometria: { od: $('fQOD').value.trim(), oi: $('fQOI').value.trim() },
+        biomicroscopia: $('fBio').value.trim(),
+        oftalmoscopia: $('fOft').value.trim(),
+        diagnosticos: diagnosticos,
+        formulaFinal: {
+          ...rx,
+          distanciaPupilar: $('fRxDP').value.trim() || $('fDP').value.trim(),
+          tipoLente: $('fTipoLente').value,
+          material: $('fMaterial').value.trim(),
+          tratamientos: $('fTratamientos').value.trim()
+        },
+        planTratamiento: $('fPlan').value.trim(),
+        proximoControl: $('fControl').value.trim(),
+        observaciones: $('fObs').value.trim(),
+        creadoPor: perfilActual.uid,
+        fechaCreacion: serverTimestamp()
+      };
+
+      const nueva = await addDoc(collection(db, 'historias_clinicas'), datos);
+
+      // efectos colaterales del ciclo
+      await updateDoc(doc(db,'citas',cita.id), { estado:'atendida', modificadoPor:perfilActual.uid, fechaModificacion:serverTimestamp() }).catch(()=>{});
+      await updateDoc(doc(db,'pacientes',paciente.id), { estadoCiclo:'atendido' }).catch(()=>{});
+      await addDoc(collection(db,'auditoria'), {
+        accion:'creacion_historia', historiaId:nueva.id, pacienteId:paciente.id,
+        usuarioId:perfilActual.uid, usuarioNombre:perfilActual.nombre||'',
+        fecha:new Date().toISOString(), fechaCreacion:serverTimestamp()
+      }).catch(()=>{});
+
+      msj.classList.add('ok');
+      msj.textContent = '✓ Historia firmada y guardada';
+      setTimeout(() => { window.location.href = 'historia_clinica.html?id=' + nueva.id; }, 900);
+    } catch (e) {
+      msj.classList.add('error');
+      msj.textContent = 'Error al guardar (' + (e.code || e.message) + ')';
+      $('btnGuardar').disabled = false;
+    }
+  }
+
+  // ═════ MODO VER ═════
+  async function modoVer(historiaId){
+    const hSnap = await getDoc(doc(db,'historias_clinicas',historiaId)).catch(()=>null);
+    if (!hSnap || !hSnap.exists()) { $('cargando').textContent = 'Historia no encontrada o sin permiso de lectura.'; return; }
+    historia = { id: hSnap.id, ...hSnap.data() };
+
+    // auditar la lectura
+    addDoc(collection(db,'auditoria'), {
+      accion:'lectura_historia', historiaId:historia.id, pacienteId:historia.pacienteId||'',
+      usuarioId:perfilActual.uid, usuarioNombre:perfilActual.nombre||'',
+      fecha:new Date().toISOString(), fechaCreacion:serverTimestamp()
+    }).catch(()=>{});
+
+    const notas = await getDocs(collection(db,'historias_clinicas',historiaId,'notas_aclaratorias')).catch(()=>null);
+    const listaNotas = notas ? notas.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')) : [];
+
+    renderLectura(listaNotas);
+  }
+
+  function tablaLecturaOjos(datos, conAdicion){
+    let h = '<table class="tabla-lectura"><thead><tr><th class="ojo"></th><th>Esfera</th><th>Cilindro</th><th>Eje</th>' + (conAdicion?'<th>Adición</th>':'') + '</tr></thead><tbody>';
+    for (const ojo of ['od','oi']) {
+      const o = (datos && datos[ojo]) || {};
+      h += '<tr><td class="ojo">' + ojo.toUpperCase() + '</td><td>' + esc(v(o.esfera)) + '</td><td>' + esc(v(o.cilindro)) + '</td><td>' + esc(v(o.eje)) + '</td>';
+      if (conAdicion) h += '<td>' + esc(v(o.adicion)) + '</td>';
+      h += '</tr>';
+    }
+    return h + '</tbody></table>';
+  }
+
+  function renderLectura(notas){
+    const H = historia;
+    let h = '';
+    h += '<div class="paciente-banda"><div>';
+    h += '<h2>' + esc(H.pacienteNombre || 'Paciente') + '</h2>';
+    h += '<div class="doc">' + esc(H.pacienteDocumento || '') + '</div>';
+    h += '<div class="meta">Atendido: ' + fechaHora(H.fechaAtencion) + ' · Sede ' + esc(H.sucursalId||'—') +
+         ' · Optómetra: ' + esc(H.optometraNombre||'—') + ' (Reg. ' + esc(H.registroProfesional||'—') + ')</div>';
+    h += '</div><span class="chip inmutable">🔒 Inmutable</span></div>';
+
+    h += '<div class="tarjeta"><h3>Motivo y antecedentes</h3><div class="dato-grilla">';
+    h += '<div class="dato" style="grid-column:1/-1"><span class="dato-etiqueta">Motivo de consulta</span><span class="dato-valor">' + esc(v(H.motivoConsulta)) + '</span></div>';
+    const a = H.antecedentes || {};
+    h += '<div class="dato"><span class="dato-etiqueta">Personales</span><span class="dato-valor">' + esc(v(a.personales)) + '</span></div>';
+    h += '<div class="dato"><span class="dato-etiqueta">Familiares</span><span class="dato-valor">' + esc(v(a.familiares)) + '</span></div>';
+    h += '<div class="dato" style="grid-column:1/-1"><span class="dato-etiqueta">Oculares</span><span class="dato-valor">' + esc(v(a.oculares)) + '</span></div>';
+    h += '</div></div>';
+
+    const av = H.agudezaVisual || {};
+    h += '<div class="tarjeta"><h3>Agudeza visual</h3><div class="dato-grilla">';
+    h += '<div class="dato"><span class="dato-etiqueta">Sin corrección OD / OI</span><span class="dato-valor mono">' + esc(v((av.sinCorreccion||{}).od)) + ' / ' + esc(v((av.sinCorreccion||{}).oi)) + '</span></div>';
+    h += '<div class="dato"><span class="dato-etiqueta">Con corrección OD / OI</span><span class="dato-valor mono">' + esc(v((av.conCorreccion||{}).od)) + ' / ' + esc(v((av.conCorreccion||{}).oi)) + '</span></div>';
+    h += '</div></div>';
+
+    h += '<div class="tarjeta"><h3>Refracción</h3>' + tablaLecturaOjos(H.refraccion, true);
+    h += '<div class="dato-grilla" style="margin-top:12px">';
+    h += '<div class="dato"><span class="dato-etiqueta">Distancia pupilar</span><span class="dato-valor mono">' + esc(v((H.refraccion||{}).distanciaPupilar)) + ' mm</span></div>';
+    h += '<div class="dato"><span class="dato-etiqueta">Queratometría OD / OI</span><span class="dato-valor mono">' + esc(v((H.queratometria||{}).od)) + ' / ' + esc(v((H.queratometria||{}).oi)) + '</span></div>';
+    h += '</div></div>';
+
+    h += '<div class="tarjeta"><h3>Examen físico ocular</h3><div class="dato-grilla">';
+    h += '<div class="dato"><span class="dato-etiqueta">Biomicroscopia</span><span class="dato-valor">' + esc(v(H.biomicroscopia)) + '</span></div>';
+    h += '<div class="dato"><span class="dato-etiqueta">Oftalmoscopia</span><span class="dato-valor">' + esc(v(H.oftalmoscopia)) + '</span></div>';
+    h += '</div></div>';
+
+    h += '<div class="tarjeta"><h3>Diagnósticos (CIE-10)</h3>';
+    if (Array.isArray(H.diagnosticos) && H.diagnosticos.length) {
+      h += '<div class="dato-grilla">';
+      for (const d of H.diagnosticos) {
+        h += '<div class="dato" style="grid-column:1/-1"><span class="dato-valor"><strong class="mono" style="color:var(--petroleo-oscuro)">' + esc(d.codigo||'—') + '</strong> · ' + esc(d.descripcion||'') + '</span></div>';
+      }
+      h += '</div>';
+    } else h += '<span class="dato-valor vacio">Sin diagnósticos registrados</span>';
+    h += '</div>';
+
+    const rx = H.formulaFinal || {};
+    h += '<div class="tarjeta"><h3>Fórmula final (prescripción)</h3>' + tablaLecturaOjos(rx, true);
+    h += '<div class="dato-grilla" style="margin-top:12px">';
+    h += '<div class="dato"><span class="dato-etiqueta">DP</span><span class="dato-valor mono">' + esc(v(rx.distanciaPupilar)) + ' mm</span></div>';
+    h += '<div class="dato"><span class="dato-etiqueta">Tipo de lente</span><span class="dato-valor">' + esc(v(rx.tipoLente)) + '</span></div>';
+    h += '<div class="dato"><span class="dato-etiqueta">Material</span><span class="dato-valor">' + esc(v(rx.material)) + '</span></div>';
+    h += '<div class="dato"><span class="dato-etiqueta">Tratamientos</span><span class="dato-valor">' + esc(v(rx.tratamientos)) + '</span></div>';
+    h += '</div></div>';
+
+    h += '<div class="tarjeta"><h3>Plan y observaciones</h3><div class="dato-grilla">';
+    h += '<div class="dato"><span class="dato-etiqueta">Plan de tratamiento</span><span class="dato-valor">' + esc(v(H.planTratamiento)) + '</span></div>';
+    h += '<div class="dato"><span class="dato-etiqueta">Próximo control / remisión</span><span class="dato-valor">' + esc(v(H.proximoControl)) + '</span></div>';
+    h += '<div class="dato" style="grid-column:1/-1"><span class="dato-etiqueta">Observaciones</span><span class="dato-valor">' + esc(v(H.observaciones)) + '</span></div>';
+    h += '</div></div>';
+
+    // notas aclaratorias
+    h += '<div class="tarjeta"><h3>Notas aclaratorias (' + notas.length + ')</h3><div id="zonaNotas">';
+    if (notas.length === 0) h += '<span class="dato-valor vacio">Sin notas aclaratorias.</span>';
+    for (const n of notas) {
+      h += '<div class="nota-item"><div class="meta">' + fechaHora(n.fecha) + ' · ' + esc(n.autorNombre||'') + ' (Reg. ' + esc(n.registroProfesional||'—') + ')</div>';
+      h += '<div class="texto">' + esc(n.texto||'') + '</div></div>';
+    }
+    h += '</div>';
+    if (perfilActual.rol === 'optometra') {
+      h += '<div class="campo" style="margin-top:12px"><label for="fNota">Agregar nota aclaratoria (no edita el original; se suma al registro)</label><textarea id="fNota"></textarea></div>';
+      h += '<div style="display:flex;gap:10px;align-items:center;margin-top:10px"><button class="boton-secundario" id="btnNota">+ Agregar nota</button><span class="mensaje" id="msjNota"></span></div>';
+    }
+    h += '</div>';
+
+    h += '<div class="pie-acciones"><span class="mensaje"></span><div style="margin-left:auto;display:flex;gap:9px">';
+    h += '<a href="historia_clinica.html" class="boton-secundario">← Historias</a>';
+    h += '<button class="boton-principal" id="btnImprimir">🖨 Imprimir fórmula</button>';
+    h += '</div></div>';
+
+    $('cargando').classList.add('oculto');
+    $('contenido').classList.remove('oculto');
+    $('contenido').innerHTML = h;
+
+    $('btnImprimir').addEventListener('click', imprimirFormula);
+    const btnNota = $('btnNota');
+    if (btnNota) btnNota.addEventListener('click', agregarNota);
+  }
+
+  async function agregarNota(){
+    const texto = $('fNota').value.trim();
+    const msj = $('msjNota');
+    msj.className = 'mensaje';
+    if (!texto) { msj.classList.add('error'); msj.textContent = 'Escribe la nota.'; return; }
+    if (!confirm('La nota aclaratoria también es inmutable. ¿Agregar al registro?')) return;
+    try {
+      await addDoc(collection(db,'historias_clinicas',historia.id,'notas_aclaratorias'), {
+        texto: texto,
+        fecha: new Date().toISOString(),
+        autorId: perfilActual.uid,
+        autorNombre: perfilActual.nombre || '',
+        registroProfesional: perfilActual.registroProfesional || '',
+        fechaCreacion: serverTimestamp()
+      });
+      msj.classList.add('ok'); msj.textContent = '✓ Nota agregada';
+      setTimeout(() => window.location.reload(), 800);
+    } catch (e) {
+      msj.classList.add('error'); msj.textContent = 'Error (' + (e.code||e.message) + ')';
+    }
+  }
+
+  function imprimirFormula(){
+    const H = historia, rx = H.formulaFinal || {};
+    const od = rx.od || {}, oi = rx.oi || {};
+    const f = new Date(H.fechaAtencion || Date.now());
+    let z = '';
+    z += '<div class="imp-cabecera"><div><h1>' + esc(empresa.nombreComercial || 'Óptica') + '</h1>';
+    z += '<div style="font-size:9pt">' + esc(empresa.razonSocial||'') + (empresa.nit?' · NIT '+esc(empresa.nit):'') + '</div></div>';
+    z += '<div class="emp">' + esc(empresa.direccion||'') + (empresa.ciudad?'<br>'+esc(empresa.ciudad):'') +
+         (empresa.telefono?'<br>Tel: '+esc(empresa.telefono):'') + (empresa.email?'<br>'+esc(empresa.email):'') + '</div></div>';
+    z += '<div class="imp-titulo">FÓRMULA ÓPTICA</div>';
+    z += '<div class="imp-datos"><strong>Paciente:</strong> ' + esc(H.pacienteNombre||'') + ' · ' + esc(H.pacienteDocumento||'') +
+         '<br><strong>Fecha:</strong> ' + f.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}) + '</div>';
+    z += '<table class="imp-tabla"><tr><th></th><th>Esfera</th><th>Cilindro</th><th>Eje</th><th>Adición</th></tr>';
+    z += '<tr><td><strong>OD</strong></td><td>' + esc(v(od.esfera)) + '</td><td>' + esc(v(od.cilindro)) + '</td><td>' + esc(v(od.eje)) + '</td><td>' + esc(v(od.adicion)) + '</td></tr>';
+    z += '<tr><td><strong>OI</strong></td><td>' + esc(v(oi.esfera)) + '</td><td>' + esc(v(oi.cilindro)) + '</td><td>' + esc(v(oi.eje)) + '</td><td>' + esc(v(oi.adicion)) + '</td></tr></table>';
+    z += '<div class="imp-obs"><strong>DP:</strong> ' + esc(v(rx.distanciaPupilar)) + ' mm';
+    if (rx.tipoLente) z += ' · <strong>Tipo de lente:</strong> ' + esc(rx.tipoLente);
+    if (rx.material) z += ' · <strong>Material:</strong> ' + esc(rx.material);
+    if (rx.tratamientos) z += '<br><strong>Tratamientos:</strong> ' + esc(rx.tratamientos);
+    if (H.proximoControl) z += '<br><strong>Control:</strong> ' + esc(H.proximoControl);
+    z += '</div>';
+    z += '<div class="imp-firma"><div class="linea">' + esc(H.optometraNombre||'') + '<br>Optómetra · Reg. ' + esc(H.registroProfesional||'—') + '</div>';
+    z += '<div class="linea">Firma y sello</div></div>';
+    z += '<div class="imp-pie">Documento generado por SIVO · ' + esc(empresa.nombreComercial||'Ópticas D-Velez') + ' · Desarrollado por TourLat</div>';
+    $('zonaImpresion').innerHTML = z;
+    window.print();
+  }
+
+  // ═════ MODO LISTADO ═════
+  let historias = [];
+  async function modoListado(){
+    try {
+      const snap = perfilActual.rol === 'optometra'
+        ? await getDocs(query(collection(db,'historias_clinicas'), where('optometraId','==',perfilActual.uid)))
+        : await getDocs(collection(db,'historias_clinicas'));
+      historias = snap.docs.map(d => ({ id:d.id, ...d.data() }))
+        .sort((a,b) => (b.fechaAtencion||'').localeCompare(a.fechaAtencion||''));
+    } catch { historias = []; }
+
+    let h = '<div class="barra"><h1>Historias clínicas</h1>';
+    h += '<div class="buscar"><input id="buscador" placeholder="Buscar por paciente o documento…" autocomplete="off"></div>';
+    h += '<span class="mono" id="contador"></span></div>';
+    h += '<div class="cinta-legal" style="margin-bottom:16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>';
+    h += '<span>Toda lectura de una historia queda registrada en auditoría. Las historias se crean únicamente desde la <a href="agenda.html" style="color:var(--ambar);font-weight:600">Agenda</a> (botón "Atender" en la cita).</span></div>';
+    h += '<div class="panel"><table class="listado"><thead><tr><th>Fecha</th><th>Paciente</th><th>Optómetra</th><th>Sede</th><th>Diagnósticos</th></tr></thead><tbody id="cuerpo"></tbody></table>';
+    h += '<div class="vacio oculto" id="vacio">No hay historias clínicas' + (perfilActual.rol==='optometra' ? ' creadas por ti' : '') + ' aún.<br>Se crean desde la Agenda, al atender una cita.</div></div>';
+
+    $('cargando').classList.add('oculto');
+    $('contenido').classList.remove('oculto');
+    $('contenido').innerHTML = h;
+
+    pintarListado(historias);
+    $('buscador').addEventListener('input', (ev) => {
+      const t = ev.target.value.trim().toLowerCase();
+      pintarListado(!t ? historias : historias.filter(x =>
+        (x.pacienteNombre||'').toLowerCase().includes(t) || (x.pacienteDocumento||'').toLowerCase().includes(t)));
+    });
+  }
+
+  function pintarListado(lista){
+    const cuerpo = $('cuerpo');
+    cuerpo.innerHTML = '';
+    $('vacio').classList.toggle('oculto', lista.length > 0);
+    $('contador').textContent = lista.length + ' historia' + (lista.length===1?'':'s');
+    for (const x of lista) {
+      const f = new Date(x.fechaAtencion || 0);
+      const diag = Array.isArray(x.diagnosticos) ? x.diagnosticos.map(d=>d.codigo).filter(Boolean).join(', ') : '';
+      const fila = document.createElement('tr');
+      fila.innerHTML =
+        '<td class="mono">' + (isNaN(f) ? '—' : f.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'})) + '</td>' +
+        '<td><strong>' + esc(x.pacienteNombre||'—') + '</strong><br><span class="mono">' + esc(x.pacienteDocumento||'') + '</span></td>' +
+        '<td>' + esc(x.optometraNombre||'—') + '</td>' +
+        '<td class="mono">' + esc(x.sucursalId||'—') + '</td>' +
+        '<td class="mono">' + esc(diag||'—') + '</td>';
+      fila.addEventListener('click', () => window.location.href = 'historia_clinica.html?id=' + x.id);
+      cuerpo.appendChild(fila);
+    }
+  }
+</script>
+</body>
+</html>
