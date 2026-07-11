@@ -101,6 +101,8 @@
   .kpi .valor{font-family:'Spline Sans Mono',monospace;font-size:1.9rem;font-weight:600;line-height:1;font-feature-settings:'tnum'}
   .kpi .valor.dinero{font-size:1.35rem}
   .kpi .detalle{font-size:.72rem;color:var(--gris);margin-top:8px}
+  .kpi .detalle .alerta{color:var(--rojo);font-weight:600}
+  .kpi.clickable{cursor:pointer}
 
   .aviso-desarrollo{background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);padding:34px;text-align:center}
   .aviso-desarrollo .lente{width:44px;height:44px;margin:0 auto 16px}
@@ -163,9 +165,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18l-2 12H5L3 7z"/><path d="M8 7a4 4 0 0 1 8 0"/></svg>
         Ventas
       </a>
-      <a href="#" class="pendiente" aria-disabled="true">
+      <a href="ordenes_trabajo.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12a8 8 0 1 1 16 0"/><circle cx="8" cy="14" r="3.4"/><circle cx="16" cy="14" r="3.4"/><path d="M11.4 14h1.2"/></svg>
-        Órdenes <span class="nav-pronto">Pronto</span>
+        Órdenes
       </a>
       <a href="#" class="pendiente" aria-disabled="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6M10 3v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 9V3"/></svg>
@@ -234,15 +236,15 @@
         <p class="valor dinero" id="kpiVentas">—</p>
         <p class="detalle" id="kpiVentasDetalle">Abonos recibidos</p>
       </article>
-      <article class="kpi">
+      <article class="kpi clickable" onclick="location.href='ordenes_trabajo.html'">
         <p class="etiqueta">Órdenes en producción</p>
-        <p class="valor">—</p>
-        <p class="detalle">Módulo de Órdenes en desarrollo</p>
+        <p class="valor" id="kpiOrdenes">—</p>
+        <p class="detalle" id="kpiOrdenesDetalle">Cargando…</p>
       </article>
       <article class="kpi">
         <p class="etiqueta">Pacientes por llamar</p>
-        <p class="valor">—</p>
-        <p class="detalle">Módulo de Seguimientos en desarrollo</p>
+        <p class="valor" id="kpiSeguimientos">—</p>
+        <p class="detalle" id="kpiSeguimientosDetalle">Módulo de Seguimientos en desarrollo</p>
       </article>
     </section>
 
@@ -250,9 +252,9 @@
       <div class="lente" aria-hidden="true"></div>
       <h2>SIVO está en construcción — Fase 1</h2>
       <p>
-        Infraestructura, seguridad, administración, pacientes, agenda, historia clínica
-        y ventas ya están operativos. Los módulos restantes
-        (Órdenes, Laboratorio, Inventario y Seguimientos)
+        Infraestructura, seguridad, administración, pacientes, agenda, historia clínica,
+        ventas y órdenes de trabajo ya están operativos. Los módulos restantes
+        (Laboratorio, Inventario y Seguimientos)
         se irán activando en este tablero a medida que se desarrollen.
       </p>
       <div class="modulos-listos" id="accesosRapidos">
@@ -260,6 +262,7 @@
         <a href="agenda.html">📅 Agenda</a>
         <a href="historia_clinica.html" id="accesoHistorias">🩺 Historias</a>
         <a href="ventas.html">💰 Ventas</a>
+        <a href="ordenes_trabajo.html">🔧 Órdenes</a>
         <a href="configuracion.html" id="accesoConfiguracion">⚙ Configuración</a>
         <a href="usuarios.html" id="accesoUsuarios">👥 Usuarios y roles</a>
       </div>
@@ -400,7 +403,7 @@
 
     await cargarSedes();
     aplicarSedeActiva();
-    await Promise.all([cargarKpiCitas(), cargarKpiVentas()]);
+    await Promise.all([cargarKpiCitas(), cargarKpiVentas(), cargarKpiOrdenes()]);
 
     try {
       const emp = await getDoc(doc(db, 'configuracion', 'empresa'));
@@ -482,6 +485,28 @@
     } catch { $('kpiVentas').textContent = '—'; }
   }
 
+  async function cargarKpiOrdenes() {
+    const sede = sedeGuardada();
+    if (!sede) { $('kpiOrdenes').textContent = '—'; $('kpiOrdenesDetalle').textContent = ''; return; }
+    try {
+      const snap = await getDocs(query(collection(db, 'ordenes_trabajo'), where('sucursalOrigen', '==', sede)));
+      const hoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
+      let enProd = 0, vencidas = 0;
+      for (const d of snap.docs) {
+        const o = d.data();
+        if (o.estadoActual === 'entregada') continue;
+        enProd++;
+        if (o.fechaPrometida && o.fechaPrometida < hoyStr) vencidas++;
+      }
+      $('kpiOrdenes').textContent = enProd;
+      if (vencidas > 0) {
+        $('kpiOrdenesDetalle').innerHTML = 'Sede ' + sede + ' · <span class="alerta">' + vencidas + ' vencida' + (vencidas===1?'':'s') + '</span>';
+      } else {
+        $('kpiOrdenesDetalle').textContent = 'Sede ' + sede + ' · sin vencidas';
+      }
+    } catch { $('kpiOrdenes').textContent = '—'; $('kpiOrdenesDetalle').textContent = ''; }
+  }
+
   $('btnSede').addEventListener('click', () => {
     const abierto = document.querySelector('.sede-menu');
     if (abierto) { abierto.remove(); return; }
@@ -497,7 +522,7 @@
         try { localStorage.setItem('sivo_sede_activa', sede.id); } catch {}
         aplicarSedeActiva();
         menu.remove();
-        await Promise.all([cargarKpiCitas(), cargarKpiVentas()]);
+        await Promise.all([cargarKpiCitas(), cargarKpiVentas(), cargarKpiOrdenes()]);
       });
       menu.appendChild(opcion);
     }
