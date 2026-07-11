@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIVO — Órdenes de trabajo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,300..800&family=Lexend:wght@300..700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fondo:#F6F8F8; --superficie:#FFFFFF; --niebla:#E4EAEA;
+    --grafito:#171A1E; --gris:#5C666B;
+    --petroleo:#0C7268; --petroleo-oscuro:#0A5B53; --petroleo-tinte:#E3F2F0;
+    --violeta:#5B4FD8; --violeta-tinte:#EDEAFB;
+    --ambar:#B45309; --ambar-tinte:#FBEEDC;
+    --rojo:#C2362F; --rojo-tinte:#FAE7E5;
+    --exito:#12805C; --exito-tinte:#E5F5EC;
+    --flash:linear-gradient(90deg,#2FD9A8 0%,#4BB8D8 50%,#7C6CF0 100%);
+    --sombra:0 1px 2px rgba(23,26,30,.05),0 4px 16px rgba(23,26,30,.04);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--fondo);color:var(--grafito);font-family:'Lexend',sans-serif;font-weight:300;font-size:15px;min-height:100vh}
+  h1,h2,h3{font-family:'Archivo',sans-serif}
+  .mono{font-family:'Spline Sans Mono',monospace}
+  .oculto{display:none !important}
+  button{font-family:'Lexend',sans-serif;cursor:pointer}
+  input,select,textarea{font-family:'Lexend',sans-serif;font-size:14px;color:var(--grafito);background:var(--superficie);border:1px solid var(--niebla);border-radius:9px;padding:9px 12px;width:100%}
+  input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--petroleo);outline-offset:1px}
+  label{display:block;font-size:12.5px;font-weight:500;color:var(--gris);margin:10px 0 4px}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+
+  /* ===== Portal ===== */
+  .portal{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .portal-caja{background:var(--superficie);border:1px solid var(--niebla);border-radius:12px;box-shadow:var(--sombra);padding:40px 36px;max-width:400px;width:100%;text-align:center}
+  .logo{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px}
+  .logo-anillo{width:38px;height:38px;border-radius:50%;background:conic-gradient(from 180deg,#2FD9A8,#4BB8D8,#7C6CF0,#2FD9A8);display:flex;align-items:center;justify-content:center}
+  .logo-anillo span{width:28px;height:28px;border-radius:50%;background:var(--superficie);display:flex;align-items:center;justify-content:center;font-family:'Archivo';font-variation-settings:'wdth' 122,'wght' 800;font-size:13px}
+  .wordmark{font-family:'Archivo';font-variation-settings:'wdth' 122,'wght' 800;font-size:22px;letter-spacing:.5px}
+  .portal-caja h1{font-size:19px;font-weight:600;margin-bottom:6px}
+  .portal-caja p{color:var(--gris);font-size:13.5px;margin-bottom:22px}
+  .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border:1px solid var(--niebla);border-radius:10px;background:var(--superficie);font-weight:500;font-size:14.5px;transition:border-color .15s}
+  .btn-google:hover{border-color:var(--petroleo)}
+  .portal-estado{margin-top:16px;font-size:13px;color:var(--gris);min-height:18px}
+  .portal-estado.error{color:var(--rojo)}
+  .credito{margin-top:26px;font-size:11.5px;color:var(--gris)}
+
+  /* ===== Aplicación ===== */
+  header{background:var(--superficie);border-bottom:1px solid var(--niebla);padding:0 22px;display:flex;align-items:center;gap:16px;height:60px;position:sticky;top:0;z-index:40}
+  .modulo-activo{position:relative;font-weight:600;font-size:15px;padding:0 4px;height:60px;display:flex;align-items:center}
+  .modulo-activo::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--flash);border-radius:3px 3px 0 0}
+  .espaciador{flex:1}
+  .btn-plano{background:none;border:1px solid var(--niebla);border-radius:9px;padding:7px 13px;font-size:13px;color:var(--grafito);text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:border-color .15s}
+  .btn-plano:hover{border-color:var(--petroleo)}
+  .btn-sede{position:relative;background:var(--petroleo-tinte);border:1px solid transparent;border-radius:9px;padding:7px 13px;font-size:13px;font-weight:500;color:var(--petroleo-oscuro)}
+  .sede-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--superficie);border:1px solid var(--niebla);border-radius:10px;box-shadow:var(--sombra);min-width:230px;z-index:60;overflow:hidden}
+  .sede-menu div{padding:10px 14px;font-size:13.5px;text-align:left;cursor:pointer}
+  .sede-menu div:hover{background:var(--petroleo-tinte)}
+  .sede-menu .codigo{font-family:'Spline Sans Mono';font-size:12px;color:var(--petroleo);margin-right:6px}
+  .sede-menu .actual{background:var(--petroleo-tinte)}
+  .usuario-mini{font-size:12.5px;color:var(--gris);text-align:right;line-height:1.3}
+  .usuario-mini b{display:block;color:var(--grafito);font-weight:500}
+
+  main{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+  .titulo-linea{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .titulo-linea h1{font-size:22px;font-weight:700}
+  .btn-accion{background:var(--petroleo);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:500;transition:background .15s}
+  .btn-accion:hover{background:var(--petroleo-oscuro)}
+  .btn-accion:disabled{opacity:.45;cursor:not-allowed}
+  .btn-secundario{background:var(--superficie);color:var(--grafito);border:1px solid var(--niebla);border-radius:10px;padding:10px 16px;font-size:14px;transition:border-color .15s}
+  .btn-secundario:hover{border-color:var(--petroleo)}
+  .btn-peligro{background:var(--rojo-tinte);color:var(--rojo);border:1px solid transparent;border-radius:10px;padding:10px 16px;font-size:14px}
+
+  .barra-filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  .chip-filtro{border:1px solid var(--niebla);background:var(--superficie);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--gris);transition:all .15s}
+  .chip-filtro:hover{border-color:var(--petroleo)}
+  .chip-filtro.activo{background:var(--petroleo-tinte);border-color:var(--petroleo);color:var(--petroleo-oscuro);font-weight:500}
+  .buscar{max-width:280px}
+
+  .tarjeta{background:var(--superficie);border:1px solid var(--niebla);border-radius:12px;box-shadow:var(--sombra);padding:18px 20px;margin-bottom:12px}
+  .orden-fila{display:flex;gap:16px;align-items:center;flex-wrap:wrap;cursor:pointer;transition:border-color .15s}
+  .orden-fila:hover{border-color:var(--petroleo)}
+  .orden-fila.vencida{border-left:4px solid var(--rojo)}
+  .orden-num{font-family:'Spline Sans Mono';font-weight:600;font-size:14.5px;min-width:150px}
+  .orden-info{flex:1;min-width:180px}
+  .orden-info b{font-weight:500;display:block}
+  .orden-info span{font-size:12.5px;color:var(--gris)}
+  .orden-fecha{font-family:'Spline Sans Mono';font-size:12.5px;color:var(--gris);text-align:right;line-height:1.5}
+  .orden-fecha .vencido-txt{color:var(--rojo);font-weight:600}
+
+  .chip-estado{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:500;white-space:nowrap}
+  .chip-estado::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+  .est-creada{background:var(--fondo);color:var(--gris);border:1px solid var(--niebla)}
+  .est-enviada_laboratorio,.est-en_laboratorio{background:var(--petroleo-tinte);color:var(--petroleo-oscuro)}
+  .est-recibida_sede{background:var(--violeta-tinte);color:var(--violeta)}
+  .est-devuelta_laboratorio{background:var(--ambar-tinte);color:var(--ambar)}
+  .est-lista_entrega{background:var(--exito-tinte);color:var(--exito)}
+  .est-entregada{background:var(--exito-tinte);color:var(--exito);border:1px solid var(--exito)}
+  .prioridad-urgente{background:var(--rojo-tinte);color:var(--rojo);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:600}
+
+  .vacio{text-align:center;color:var(--gris);padding:44px 20px;font-size:14px}
+  .ok{color:var(--exito);font-size:13px}
+  .error{color:var(--rojo);font-size:13px}
+
+  /* ===== Modales ===== */
+  .velo{position:fixed;inset:0;background:rgba(23,26,30,.45);z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:34px 16px;overflow-y:auto}
+  .modal{background:var(--superficie);border-radius:12px;box-shadow:var(--sombra);max-width:760px;width:100%;padding:26px 28px;margin-bottom:34px}
+  .modal h2{font-size:18px;font-weight:700;margin-bottom:4px}
+  .modal .sub{font-size:13px;color:var(--gris);margin-bottom:16px}
+  .modal-pie{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap}
+  .rejilla-2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  .rejilla-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 12px}
+  @media (max-width:640px){.rejilla-2,.rejilla-3{grid-template-columns:1fr}}
+  .seccion-titulo{font-family:'Archivo';font-weight:700;font-size:13.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--petroleo-oscuro);border-bottom:1px solid var(--niebla);padding-bottom:6px;margin:22px 0 6px}
+
+  .lista-sel{border:1px solid var(--niebla);border-radius:10px;max-height:230px;overflow-y:auto;margin-top:6px}
+  .lista-sel div{padding:10px 13px;font-size:13.5px;cursor:pointer;border-bottom:1px solid var(--niebla)}
+  .lista-sel div:last-child{border-bottom:none}
+  .lista-sel div:hover{background:var(--petroleo-tinte)}
+  .lista-sel .sel{background:var(--petroleo-tinte);border-left:3px solid var(--petroleo)}
+  .lista-sel .mini{color:var(--gris);font-size:12px;display:block}
+
+  table.formula{width:100%;border-collapse:collapse;margin-top:8px}
+  table.formula th{font-size:11.5px;color:var(--gris);font-weight:500;text-align:left;padding:4px 6px;text-transform:uppercase;letter-spacing:.4px}
+  table.formula td{padding:3px 4px}
+  table.formula td:first-child{font-family:'Spline Sans Mono';font-weight:600;font-size:13px;padding-right:8px}
+  table.formula input{font-family:'Spline Sans Mono';font-size:13.5px;padding:7px 8px;text-align:center}
+
+  .trats{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .trats label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--niebla);border-radius:999px;padding:6px 12px;font-size:12.5px;color:var(--grafito);margin:0;cursor:pointer}
+  .trats label:has(input:checked){background:var(--petroleo-tinte);border-color:var(--petroleo);color:var(--petroleo-oscuro)}
+  .trats input{width:auto}
+
+  .timeline{border-left:2px solid var(--niebla);margin:10px 0 0 8px;padding-left:18px}
+  .evento{position:relative;padding-bottom:14px;font-size:13px}
+  .evento::before{content:'';position:absolute;left:-24px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--petroleo);border:2px solid var(--superficie)}
+  .evento .cuando{font-family:'Spline Sans Mono';font-size:11.5px;color:var(--gris)}
+  .evento .obs{color:var(--gris);font-size:12.5px;margin-top:2px}
+
+  .detalle-cab{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start}
+  .dato-par{font-size:13.5px;margin-bottom:5px}
+  .dato-par b{font-weight:500;color:var(--gris);font-size:12px;display:block}
+  .formula-vista{background:var(--fondo);border:1px solid var(--niebla);border-radius:10px;padding:12px 14px;font-family:'Spline Sans Mono';font-size:13.5px;line-height:1.9;margin-top:6px}
+  .acciones-estado{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+  /* ===== Impresión ===== */
+  #areaImpresion{display:none}
+  @media print{
+    body *{visibility:hidden}
+    #areaImpresion,#areaImpresion *{visibility:visible}
+    #areaImpresion{display:block;position:absolute;inset:0;padding:28px;font-family:'Lexend',sans-serif;color:#000}
+  }
+  .imp-cab{display:flex;justify-content:space-between;border-bottom:2px solid #171A1E;padding-bottom:12px;margin-bottom:16px}
+  .imp-cab h2{font-family:'Archivo';font-size:19px}
+  .imp-cab p{font-size:11.5px;line-height:1.5}
+  .imp-num{font-family:'Spline Sans Mono';font-weight:600;font-size:16px;text-align:right}
+  .imp-seccion{font-family:'Archivo';font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #999;margin:16px 0 8px;padding-bottom:4px}
+  table.imp-formula{width:100%;border-collapse:collapse;font-family:'Spline Sans Mono';font-size:13px}
+  table.imp-formula th,table.imp-formula td{border:1px solid #999;padding:6px 8px;text-align:center}
+  table.imp-formula th{font-family:'Lexend';font-size:10.5px;text-transform:uppercase}
+  .imp-pie{margin-top:34px;font-size:10.5px;color:#555;border-top:1px solid #999;padding-top:8px;display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+
+<!-- ============ PORTAL ============ -->
+<div class="portal" id="pantallaPortal">
+  <div class="portal-caja">
+    <div class="logo">
+      <div class="logo-anillo"><span>S</span></div>
+      <span class="wordmark">SIVO</span>
+    </div>
+    <h1>Órdenes de trabajo</h1>
+    <p id="portalEmpresa">Ópticas D-Velez · Acceso restringido al personal autorizado</p>
+    <button class="btn-google" id="btnEntrar">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.7l6.2 5.2C41.4 35.2 44 30 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+      Entrar con Google
+    </button>
+    <div class="portal-estado" id="portalEstado"></div>
+    <div class="credito">Desarrollado por TourLat</div>
+  </div>
+</div>
+
+<!-- ============ APLICACIÓN ============ -->
+<div class="oculto" id="pantallaApp">
+  <header>
+    <div class="logo">
+      <div class="logo-anillo"><span>S</span></div>
+      <span class="wordmark" style="font-size:18px">SIVO</span>
+    </div>
+    <div class="modulo-activo">Órdenes de trabajo</div>
+    <div class="espaciador"></div>
+    <button class="btn-sede" id="btnSede">Sede: —</button>
+    <a class="btn-plano" href="index.html">← Tablero</a>
+    <div class="usuario-mini" id="usuarioMini"></div>
+    <button class="btn-plano" id="btnSalir">Salir</button>
+  </header>
+
+  <main>
+    <div class="titulo-linea">
+      <h1>Órdenes de trabajo</h1>
+      <span class="espaciador"></span>
+      <button class="btn-secundario" id="btnLabs">🏭 Laboratorios</button>
+      <button class="btn-accion oculto" id="btnNueva">+ Nueva orden</button>
+    </div>
+
+    <div class="barra-filtros">
+      <button class="chip-filtro activo" data-f="todas">Todas</button>
+      <button class="chip-filtro" data-f="creada">Creadas</button>
+      <button class="chip-filtro" data-f="laboratorio">En laboratorio</button>
+      <button class="chip-filtro" data-f="recibida_sede">Recibidas / QC</button>
+      <button class="chip-filtro" data-f="lista_entrega">Listas</button>
+      <button class="chip-filtro" data-f="entregada">Entregadas</button>
+      <button class="chip-filtro" data-f="vencidas">⚠ Vencidas</button>
+      <span class="espaciador"></span>
+      <input class="buscar" id="txtBuscar" placeholder="Buscar paciente, documento u orden…">
+    </div>
+
+    <div id="listaOrdenes"><div class="vacio">Cargando órdenes…</div></div>
+  </main>
+</div>
+
+<!-- ============ MODAL NUEVA ORDEN ============ -->
+<div class="velo oculto" id="veloNueva">
+  <div class="modal">
+    <h2>Nueva orden de trabajo</h2>
+    <p class="sub">Ruta externa · La fórmula viaja como copia — el laboratorio nunca accede a la historia clínica.</p>
+
+    <div class="seccion-titulo">1 · Venta asociada</div>
+    <input id="txtBuscarVenta" placeholder="Filtrar por paciente o documento…">
+    <div class="lista-sel" id="listaVentas"><div class="mini" style="padding:10px 13px">Cargando ventas de la sede…</div></div>
+
+    <div class="seccion-titulo">2 · Laboratorio y promesa</div>
+    <div class="rejilla-3">
+      <div>
+        <label>Laboratorio externo *</label>
+        <select id="selLab"></select>
+      </div>
+      <div>
+        <label>Fecha prometida *</label>
+        <input type="date" id="inFechaProm">
+      </div>
+      <div>
+        <label>Prioridad</label>
+        <select id="selPrioridad">
+          <option value="normal">Normal</option>
+          <option value="urgente">Urgente</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="seccion-titulo">3 · Fórmula óptica</div>
+    <div id="zonaCargarFormula" class="oculto" style="margin-bottom:6px">
+      <button class="btn-secundario" id="btnCargarFormula" style="padding:7px 13px;font-size:13px">📋 Cargar de la última historia clínica</button>
+      <span id="msgFormula" style="font-size:12.5px;margin-left:8px"></span>
+    </div>
+    <table class="formula">
+      <thead><tr><th></th><th>Esfera</th><th>Cilindro</th><th>Eje</th><th>Adición</th><th>DP (mm)</th></tr></thead>
+      <tbody>
+        <tr><td>OD</td><td><input id="od_esfera"></td><td><input id="od_cilindro"></td><td><input id="od_eje"></td><td><input id="od_adicion"></td><td><input id="od_dp"></td></tr>
+        <tr><td>OI</td><td><input id="oi_esfera"></td><td><input id="oi_cilindro"></td><td><input id="oi_eje"></td><td><input id="oi_adicion"></td><td><input id="oi_dp"></td></tr>
+      </tbody>
+    </table>
+    <label>Observaciones de la fórmula</label>
+    <input id="inObsFormula" placeholder="Ej: altura de montaje, prisma, notas del optómetra…">
+
+    <div class="seccion-titulo">4 · Especificaciones del trabajo</div>
+    <div class="rejilla-2">
+      <div>
+        <label>Tipo de lente *</label>
+        <select id="selTipoLente"></select>
+      </div>
+      <div>
+        <label>Material *</label>
+        <select id="selMaterial"></select>
+      </div>
+    </div>
+    <label>Tratamientos</label>
+    <div class="trats" id="zonaTratamientos"></div>
+    <label>Montura (referencia / descripción)</label>
+    <input id="inMontura" placeholder="Ej: Ray-Ban RX5154, aro completo, del paciente…">
+    <label>Observaciones para el laboratorio</label>
+    <textarea id="inObsEspec" rows="2" placeholder="Indicaciones adicionales de fabricación…"></textarea>
+
+    <div class="modal-pie">
+      <span id="msgNueva" style="align-self:center"></span>
+      <button class="btn-secundario" id="btnCancelarNueva">Cancelar</button>
+      <button class="btn-accion" id="btnGuardarOrden">Crear orden</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DETALLE ============ -->
+<div class="velo oculto" id="veloDetalle">
+  <div class="modal">
+    <div class="detalle-cab">
+      <div>
+        <h2 class="mono" id="detNumero">OT-</h2>
+        <p class="sub" id="detSub"></p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span id="detPrioridad"></span>
+        <span id="detChip"></span>
+      </div>
+    </div>
+
+    <div class="rejilla-3" style="margin-top:10px">
+      <div class="dato-par"><b>Paciente</b><span id="detPaciente"></span></div>
+      <div class="dato-par"><b>Laboratorio</b><span id="detLab"></span></div>
+      <div class="dato-par"><b>Venta</b><span class="mono" id="detVenta"></span></div>
+      <div class="dato-par"><b>Fecha prometida</b><span class="mono" id="detProm"></span></div>
+      <div class="dato-par"><b>Creada por</b><span id="detCreador"></span></div>
+      <div class="dato-par"><b>Reprocesos</b><span class="mono" id="detReprocesos"></span></div>
+    </div>
+
+    <div class="seccion-titulo">Fórmula</div>
+    <div class="formula-vista" id="detFormula"></div>
+
+    <div class="seccion-titulo">Especificaciones</div>
+    <div class="rejilla-2">
+      <div class="dato-par"><b>Tipo de lente</b><span id="detTipoLente"></span></div>
+      <div class="dato-par"><b>Material</b><span id="detMaterial"></span></div>
+      <div class="dato-par"><b>Tratamientos</b><span id="detTrats"></span></div>
+      <div class="dato-par"><b>Montura</b><span id="detMontura"></span></div>
+    </div>
+    <div class="dato-par" id="detObsEspecPar"><b>Observaciones</b><span id="detObsEspec"></span></div>
+
+    <div class="seccion-titulo">Avanzar estado</div>
+    <div id="zonaAvance">
+      <label>Observaciones de la transición</label>
+      <input id="inObsTransicion" placeholder="Opcional — se guarda en el historial">
+      <div class="acciones-estado" id="botonesAvance"></div>
+      <p class="error" id="msgAvance" style="margin-top:8px"></p>
+    </div>
+    <p class="sub oculto" id="msgSinPermiso">Tu rol puede consultar esta orden; los cambios de estado los registra recepción o el SuperAdmin.</p>
+
+    <div class="seccion-titulo">Historial de estados</div>
+    <div class="timeline" id="detTimeline"></div>
+
+    <div class="modal-pie">
+      <button class="btn-secundario" id="btnImprimirOrden">🖨 Imprimir orden</button>
+      <button class="btn-secundario" id="btnCerrarDetalle">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL LABORATORIOS ============ -->
+<div class="velo oculto" id="veloLabs">
+  <div class="modal" style="max-width:640px">
+    <h2>Laboratorios externos</h2>
+    <p class="sub">Directorio global de la red. Las métricas de desempeño se calcularán en Fase 3.</p>
+    <div id="listaLabs"></div>
+    <div id="formLabZona" class="oculto">
+      <div class="seccion-titulo" id="tituloFormLab">Nuevo laboratorio</div>
+      <div class="rejilla-2">
+        <div><label>Nombre *</label><input id="lab_nombre"></div>
+        <div><label>NIT</label><input id="lab_nit" class="mono"></div>
+        <div><label>Persona de contacto</label><input id="lab_contacto"></div>
+        <div><label>Teléfono</label><input id="lab_telefono" class="mono"></div>
+        <div><label>WhatsApp</label><input id="lab_whatsapp" class="mono"></div>
+        <div><label>Email</label><input id="lab_email"></div>
+        <div><label>Tiempo promedio (días)</label><input id="lab_dias" type="number" min="1" value="5" class="mono"></div>
+        <div><label>Estado</label><select id="lab_estado"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div>
+      </div>
+      <div class="modal-pie">
+        <span id="msgLab" style="align-self:center"></span>
+        <button class="btn-secundario" id="btnCancelarLab">Cancelar</button>
+        <button class="btn-accion" id="btnGuardarLab">Guardar</button>
+      </div>
+    </div>
+    <div class="modal-pie">
+      <button class="btn-accion oculto" id="btnNuevoLab">+ Agregar laboratorio</button>
+      <button class="btn-secundario" id="btnCerrarLabs">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ÁREA DE IMPRESIÓN ============ -->
+<div id="areaImpresion"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, getDocs, query, where, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdUihN1s_SqdKEJAoobOkOjQmVVk0foyQ",
+    authDomain: "sivo-dvelez.firebaseapp.com",
+    projectId: "sivo-dvelez",
+    storageBucket: "sivo-dvelez.firebasestorage.app",
+    messagingSenderId: "686206424202",
+    appId: "1:686206424202:web:e6fc32b40c7183ea108973"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const proveedor = new GoogleAuthProvider();
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (t) => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmtCOP = new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 });
+
+  // ===== Constantes del dominio =====
+  const NOMBRES_ESTADO = {
+    creada: 'Creada',
+    enviada_laboratorio: 'Enviada a laboratorio',
+    en_laboratorio: 'En laboratorio',
+    recibida_sede: 'Recibida en sede',
+    devuelta_laboratorio: 'Devuelta al laboratorio',
+    lista_entrega: 'Lista para entrega',
+    entregada: 'Entregada'
+  };
+  // Transiciones ruta EXTERNA (Fase 1)
+  const TRANSICIONES = {
+    creada:               [{ a:'enviada_laboratorio', txt:'📦 Enviar a laboratorio' }],
+    enviada_laboratorio:  [{ a:'en_laboratorio', txt:'🏭 Confirmar en laboratorio' }],
+    en_laboratorio:       [{ a:'recibida_sede', txt:'📥 Recibir en sede' }],
+    devuelta_laboratorio: [{ a:'en_laboratorio', txt:'🏭 Confirmar reingreso al laboratorio' }],
+    recibida_sede:        [{ a:'lista_entrega', txt:'✅ QC aprobado — Lista para entrega' },
+                           { a:'devuelta_laboratorio', txt:'↩ QC rechazado — Devolver', peligro:true, requiereObs:true }],
+    lista_entrega:        [{ a:'entregada', txt:'🤝 Entregar al paciente' }],
+    entregada:            []
+  };
+  const TIPOS_LENTE_DEF = ['Monofocal','Bifocal','Progresivo','Ocupacional'];
+  const MATERIALES_DEF = ['CR-39','Policarbonato','Alto índice 1.61','Alto índice 1.67','Mineral'];
+  const TRATAMIENTOS_DEF = ['Antirreflejo','Filtro azul','Fotocromático','Endurecido','Filtro UV'];
+
+  const nombresRol = {
+    superadmin:'Súper Administrador', admin_sucursal:'Admin de Sucursal',
+    optometra:'Optómetra', recepcionista:'Recepcionista', tecnico_lab:'Técnico de Laboratorio'
+  };
+
+  // ===== Estado en memoria =====
+  let perfilActual = null;
+  let uidActual = null;
+  let sedesDisponibles = [];
+  let sedeActiva = null;
+  let empresa = {};
+  let confSeguimientos = { diasPostEntrega:10, mesesRecall:11 };
+  let catalogos = { tiposLente:TIPOS_LENTE_DEF, materiales:MATERIALES_DEF, tratamientos:TRATAMIENTOS_DEF };
+  let laboratorios = [];
+  let ordenes = [];
+  let filtroActivo = 'todas';
+  let ventaSeleccionada = null;
+  let ventasCandidatas = [];
+  let ordenAbierta = null;
+  let labEditando = null;
+
+  const hoyISO = () => new Date().toISOString().slice(0,10);
+
+  // ===== Portal =====
+  $('btnEntrar').addEventListener('click', async () => {
+    const estado = $('portalEstado');
+    estado.className = 'portal-estado';
+    estado.textContent = 'Abriendo ventana de Google…';
+    try { await signInWithPopup(auth, proveedor); }
+    catch (e) {
+      estado.classList.add('error');
+      estado.textContent = e.code === 'auth/popup-closed-by-user'
+        ? 'Ventana cerrada antes de completar el acceso. Intenta de nuevo.'
+        : 'No se pudo iniciar sesión (' + e.code + ').';
+    }
+  });
+  $('btnSalir').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (usuario) => {
+    if (!usuario) {
+      $('pantallaApp').classList.add('oculto');
+      $('pantallaPortal').classList.remove('oculto');
+      return;
+    }
+    const estado = $('portalEstado');
+    estado.className = 'portal-estado';
+    estado.textContent = 'Verificando autorización…';
+    try {
+      const snap = await getDoc(doc(db, 'usuarios', usuario.uid));
+      if (!snap.exists() || snap.data().estado !== 'activo') {
+        estado.classList.add('error');
+        estado.textContent = 'Esta cuenta no está autorizada o está suspendida.';
+        await signOut(auth);
+        return;
+      }
+      const perfil = snap.data();
+      if (perfil.rol === 'tecnico_lab') {
+        estado.classList.add('error');
+        estado.textContent = 'El módulo de Órdenes (sede) no está habilitado para tu rol. La cola de producción llegará con el módulo Laboratorio.';
+        await signOut(auth);
+        return;
+      }
+      perfilActual = perfil;
+      uidActual = usuario.uid;
+      await iniciarApp();
+    } catch (e) {
+      estado.classList.add('error');
+      estado.textContent = 'Error verificando el acceso: ' + e.code;
+    }
+  });
+
+  // ===== Arranque =====
+  async function iniciarApp() {
+    $('usuarioMini').innerHTML = '<b>' + esc(perfilActual.nombre) + '</b>' + esc(nombresRol[perfilActual.rol] || perfilActual.rol);
+
+    // Configuración (tolerante a ausencia)
+    try {
+      const eSnap = await getDoc(doc(db, 'configuracion', 'empresa'));
+      if (eSnap.exists()) empresa = eSnap.data();
+      if (empresa.nombreComercial) $('portalEmpresa').textContent = empresa.nombreComercial + ' · Acceso restringido al personal autorizado';
+    } catch {}
+    try {
+      const sSnap = await getDoc(doc(db, 'configuracion', 'seguimientos'));
+      if (sSnap.exists()) confSeguimientos = { ...confSeguimientos, ...sSnap.data() };
+    } catch {}
+    try {
+      const oSnap = await getDoc(doc(db, 'configuracion', 'ordenes'));
+      if (oSnap.exists()) {
+        const d = oSnap.data();
+        if (Array.isArray(d.tiposLente) && d.tiposLente.length) catalogos.tiposLente = d.tiposLente;
+        if (Array.isArray(d.materiales) && d.materiales.length) catalogos.materiales = d.materiales;
+        if (Array.isArray(d.tratamientos) && d.tratamientos.length) catalogos.tratamientos = d.tratamientos;
+      }
+    } catch {}
+
+    // Sedes disponibles
+    const todas = await getDocs(collection(db, 'sucursales'));
+    sedesDisponibles = [];
+    todas.forEach(s => {
+      if (perfilActual.rol === 'superadmin' || (perfilActual.sucursales || []).includes(s.id)) {
+        sedesDisponibles.push({ id: s.id, ...s.data() });
+      }
+    });
+    let guardada = null;
+    try { guardada = localStorage.getItem('sivo_sede_activa'); } catch {}
+    sedeActiva = sedesDisponibles.find(s => s.id === guardada)?.id
+      || perfilActual.sucursalPrincipal
+      || (sedesDisponibles[0] && sedesDisponibles[0].id);
+    aplicarSedeActiva();
+
+    // Permisos de creación: la v1.3 permite crear a optómetra, recepcionista, admin y superadmin
+    if (['superadmin','admin_sucursal','optometra','recepcionista'].includes(perfilActual.rol)) {
+      $('btnNueva').classList.remove('oculto');
+    }
+    if (['superadmin','admin_sucursal'].includes(perfilActual.rol)) {
+      $('btnNuevoLab').classList.remove('oculto');
+    }
+
+    await cargarLaboratorios();
+    await cargarOrdenes();
+
+    $('pantallaPortal').classList.add('oculto');
+    $('pantallaApp').classList.remove('oculto');
+  }
+
+  function aplicarSedeActiva() {
+    const sede = sedesDisponibles.find(s => s.id === sedeActiva);
+    $('btnSede').textContent = 'Sede: ' + (sede ? (sede.nombre || sede.id) : '—');
+  }
+
+  $('btnSede').addEventListener('click', () => {
+    const previo = document.querySelector('.sede-menu');
+    if (previo) { previo.remove(); return; }
+    const menu = document.createElement('div');
+    menu.className = 'sede-menu';
+    for (const sede of sedesDisponibles) {
+      const op = document.createElement('div');
+      op.className = sede.id === sedeActiva ? 'actual' : '';
+      op.innerHTML = '<span class="codigo">' + esc(sede.id) + '</span>' + esc(sede.nombre || sede.id);
+      op.addEventListener('click', async () => {
+        sedeActiva = sede.id;
+        try { localStorage.setItem('sivo_sede_activa', sede.id); } catch {}
+        aplicarSedeActiva();
+        menu.remove();
+        await cargarOrdenes();
+      });
+      menu.appendChild(op);
+    }
+    $('btnSede').appendChild(menu);
+  });
+  document.addEventListener('click', (ev) => {
+    if (!$('btnSede').contains(ev.target)) {
+      const m = document.querySelector('.sede-menu');
+      if (m) m.remove();
+    }
+  });
+
+  // ===== Laboratorios =====
+  async function cargarLaboratorios() {
+    laboratorios = [];
+    const snap = await getDocs(collection(db, 'laboratorios_externos'));
+    snap.forEach(d => laboratorios.push({ id: d.id, ...d.data() }));
+    laboratorios.sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''));
+  }
+
+  function pintarLabs() {
+    const zona = $('listaLabs');
+    if (!laboratorios.length) {
+      zona.innerHTML = '<div class="vacio">No hay laboratorios registrados. Agrega el primero para poder crear órdenes.</div>';
+      return;
+    }
+    const puedeEditar = ['superadmin','admin_sucursal'].includes(perfilActual.rol);
+    zona.innerHTML = laboratorios.map(l =>
+      '<div class="tarjeta" style="padding:13px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">' +
+        '<div style="flex:1;min-width:170px"><b style="font-weight:500">' + esc(l.nombre) + '</b>' +
+          '<span style="display:block;font-size:12.5px;color:var(--gris)">' +
+          (l.contacto ? esc(l.contacto) + ' · ' : '') + esc(l.telefono || l.whatsapp || '') + '</span></div>' +
+        '<span class="mono" style="font-size:12px;color:var(--gris)">' + (l.tiempoPromedioDias || 5) + ' días</span>' +
+        '<span class="chip-estado ' + (l.estado === 'activo' ? 'est-lista_entrega' : 'est-creada') + '">' + esc(l.estado || 'activo') + '</span>' +
+        (puedeEditar ? '<button class="btn-plano" data-editlab="' + esc(l.id) + '">Editar</button>' : '') +
+      '</div>'
+    ).join('');
+    zona.querySelectorAll('[data-editlab]').forEach(b => b.addEventListener('click', () => abrirFormLab(b.dataset.editlab)));
+  }
+
+  $('btnLabs').addEventListener('click', () => { pintarLabs(); $('formLabZona').classList.add('oculto'); $('veloLabs').classList.remove('oculto'); });
+  $('btnCerrarLabs').addEventListener('click', () => $('veloLabs').classList.add('oculto'));
+  $('btnNuevoLab').addEventListener('click', () => abrirFormLab(null));
+  $('btnCancelarLab').addEventListener('click', () => $('formLabZona').classList.add('oculto'));
+
+  function abrirFormLab(id) {
+    labEditando = id;
+    const l = id ? laboratorios.find(x => x.id === id) : null;
+    $('tituloFormLab').textContent = l ? 'Editar laboratorio' : 'Nuevo laboratorio';
+    $('lab_nombre').value = l?.nombre || '';
+    $('lab_nit').value = l?.nit || '';
+    $('lab_contacto').value = l?.contacto || '';
+    $('lab_telefono').value = l?.telefono || '';
+    $('lab_whatsapp').value = l?.whatsapp || '';
+    $('lab_email').value = l?.email || '';
+    $('lab_dias').value = l?.tiempoPromedioDias || 5;
+    $('lab_estado').value = l?.estado || 'activo';
+    $('msgLab').textContent = '';
+    $('formLabZona').classList.remove('oculto');
+  }
+
+  $('btnGuardarLab').addEventListener('click', async () => {
+    const msg = $('msgLab');
+    msg.className = '';
+    const nombre = $('lab_nombre').value.trim();
+    if (!nombre) { msg.className = 'error'; msg.textContent = 'El nombre es obligatorio.'; return; }
+    const datos = {
+      nombre,
+      nit: $('lab_nit').value.trim(),
+      contacto: $('lab_contacto').value.trim(),
+      telefono: $('lab_telefono').value.trim(),
+      whatsapp: $('lab_whatsapp').value.trim(),
+      email: $('lab_email').value.trim(),
+      tiempoPromedioDias: parseInt($('lab_dias').value, 10) || 5,
+      estado: $('lab_estado').value,
+      modificadoPor: uidActual,
+      fechaModificacion: serverTimestamp()
+    };
+    try {
+      if (labEditando) {
+        await updateDoc(doc(db, 'laboratorios_externos', labEditando), datos);
+      } else {
+        await addDoc(collection(db, 'laboratorios_externos'), { ...datos, creadoPor: uidActual, fechaCreacion: serverTimestamp() });
+      }
+      await cargarLaboratorios();
+      pintarLabs();
+      $('formLabZona').classList.add('oculto');
+      msg.className = 'ok';
+    } catch (e) {
+      msg.className = 'error';
+      msg.textContent = 'No se pudo guardar: ' + e.code;
+    }
+  });
+
+  // ===== Órdenes: carga y listado =====
+  async function cargarOrdenes() {
+    if (!sedeActiva) { $('listaOrdenes').innerHTML = '<div class="vacio">No tienes sedes asignadas.</div>'; return; }
+    ordenes = [];
+    const q = query(collection(db, 'ordenes_trabajo'), where('sucursalOrigen', '==', sedeActiva));
+    const snap = await getDocs(q);
+    snap.forEach(d => ordenes.push({ id: d.id, ...d.data() }));
+    ordenes.sort((a,b) => (b.fechaCreacionISO || '').localeCompare(a.fechaCreacionISO || ''));
+    pintarOrdenes();
+  }
+
+  function estaVencida(o) {
+    return o.estadoActual !== 'entregada' && o.fechaPrometida && o.fechaPrometida < hoyISO();
+  }
+
+  function pintarOrdenes() {
+    const texto = $('txtBuscar').value.trim().toLowerCase();
+    let lista = ordenes.filter(o => {
+      if (filtroActivo === 'vencidas') return estaVencida(o);
+      if (filtroActivo === 'laboratorio') return ['enviada_laboratorio','en_laboratorio','devuelta_laboratorio'].includes(o.estadoActual);
+      if (filtroActivo !== 'todas' && o.estadoActual !== filtroActivo) return false;
+      return true;
+    });
+    if (texto) {
+      lista = lista.filter(o =>
+        (o.pacienteNombre || '').toLowerCase().includes(texto) ||
+        (o.pacienteDocumento || '').toLowerCase().includes(texto) ||
+        (o.numeroOrden || '').toLowerCase().includes(texto)
+      );
+    }
+    const zona = $('listaOrdenes');
+    if (!lista.length) {
+      zona.innerHTML = '<div class="vacio">No hay órdenes que coincidan con el filtro en esta sede.</div>';
+      return;
+    }
+    zona.innerHTML = lista.map(o =>
+      '<div class="tarjeta orden-fila' + (estaVencida(o) ? ' vencida' : '') + '" data-orden="' + esc(o.id) + '">' +
+        '<span class="orden-num">' + esc(o.numeroOrden) + '</span>' +
+        '<div class="orden-info"><b>' + esc(o.pacienteNombre || '—') + '</b>' +
+          '<span>' + esc(o.laboratorioNombre || '') + '</span></div>' +
+        (o.prioridad === 'urgente' ? '<span class="prioridad-urgente">URGENTE</span>' : '') +
+        '<span class="chip-estado est-' + esc(o.estadoActual) + '">' + esc(NOMBRES_ESTADO[o.estadoActual] || o.estadoActual) + '</span>' +
+        '<div class="orden-fecha">Promesa<br><span class="' + (estaVencida(o) ? 'vencido-txt' : '') + '">' + esc(o.fechaPrometida || '—') + '</span></div>' +
+      '</div>'
+    ).join('');
+    zona.querySelectorAll('[data-orden]').forEach(t => t.addEventListener('click', () => abrirDetalle(t.dataset.orden)));
+  }
+
+  document.querySelectorAll('.chip-filtro').forEach(ch => ch.addEventListener('click', () => {
+    document.querySelectorAll('.chip-filtro').forEach(c => c.classList.remove('activo'));
+    ch.classList.add('activo');
+    filtroActivo = ch.dataset.f;
+    pintarOrdenes();
+  }));
+  $('txtBuscar').addEventListener('input', pintarOrdenes);
+
+  // ===== Nueva orden =====
+  $('btnNueva').addEventListener('click', abrirNueva);
+  $('btnCancelarNueva').addEventListener('click', () => $('veloNueva').classList.add('oculto'));
+
+  async function abrirNueva() {
+    ventaSeleccionada = null;
+    $('msgNueva').textContent = '';
+    $('txtBuscarVenta').value = '';
+    ['od_esfera','od_cilindro','od_eje','od_adicion','od_dp','oi_esfera','oi_cilindro','oi_eje','oi_adicion','oi_dp','inObsFormula','inMontura','inObsEspec'].forEach(id => $(id).value = '');
+    $('msgFormula').textContent = '';
+    $('selPrioridad').value = 'normal';
+
+    // Catálogos
+    $('selTipoLente').innerHTML = catalogos.tiposLente.map(t => '<option>' + esc(t) + '</option>').join('');
+    $('selMaterial').innerHTML = catalogos.materiales.map(m => '<option>' + esc(m) + '</option>').join('');
+    $('zonaTratamientos').innerHTML = catalogos.tratamientos.map((t,i) =>
+      '<label><input type="checkbox" value="' + esc(t) + '" id="trat_' + i + '">' + esc(t) + '</label>').join('');
+
+    // Laboratorios activos
+    const activos = laboratorios.filter(l => (l.estado || 'activo') === 'activo');
+    $('selLab').innerHTML = activos.length
+      ? activos.map(l => '<option value="' + esc(l.id) + '">' + esc(l.nombre) + '</option>').join('')
+      : '<option value="">— Registra un laboratorio primero —</option>';
+    sugerirFechaPromesa();
+
+    // Cargar fórmula desde historia: solo roles con lectura permitida (v1.3)
+    $('zonaCargarFormula').classList.toggle('oculto', !['optometra','superadmin'].includes(perfilActual.rol));
+
+    // Ventas candidatas: de la sede, no anuladas y sin orden previa
+    $('listaVentas').innerHTML = '<div class="mini" style="padding:10px 13px">Cargando ventas de la sede…</div>';
+    $('veloNueva').classList.remove('oculto');
+
+    const conOrden = new Set(ordenes.map(o => o.ventaId).filter(Boolean));
+    ventasCandidatas = [];
+    const q = query(collection(db, 'ventas'), where('sucursalId', '==', sedeActiva));
+    const snap = await getDocs(q);
+    snap.forEach(d => {
+      const v = { id: d.id, ...d.data() };
+      if (v.estado !== 'anulada' && !conOrden.has(v.id)) ventasCandidatas.push(v);
+    });
+    ventasCandidatas.sort((a,b) => (b.fechaCreacionISO || '').localeCompare(a.fechaCreacionISO || ''));
+    pintarVentas();
+  }
+
+  function refVenta(v) {
+    return 'V-' + sedeActiva + '-' + v.id.slice(-6).toUpperCase();
+  }
+
+  function pintarVentas() {
+    const texto = $('txtBuscarVenta').value.trim().toLowerCase();
+    const lista = ventasCandidatas.filter(v =>
+      !texto ||
+      (v.pacienteNombre || '').toLowerCase().includes(texto) ||
+      (v.pacienteDocumento || '').toLowerCase().includes(texto)
+    );
+    const zona = $('listaVentas');
+    if (!lista.length) {
+      zona.innerHTML = '<div class="mini" style="padding:10px 13px">No hay ventas disponibles sin orden en esta sede.</div>';
+      return;
+    }
+    zona.innerHTML = lista.map(v =>
+      '<div data-venta="' + esc(v.id) + '" class="' + (ventaSeleccionada?.id === v.id ? 'sel' : '') + '">' +
+        '<b style="font-weight:500">' + esc(v.pacienteNombre || '—') + '</b> · <span class="mono" style="font-size:12px">' + esc(refVenta(v)) + '</span>' +
+        '<span class="mini">' + esc(v.estado) + ' · Total ' + fmtCOP.format(v.total || 0) + ' · Saldo ' + fmtCOP.format(v.saldo ?? v.total ?? 0) + '</span>' +
+      '</div>'
+    ).join('');
+    zona.querySelectorAll('[data-venta]').forEach(f => f.addEventListener('click', () => {
+      ventaSeleccionada = ventasCandidatas.find(v => v.id === f.dataset.venta);
+      pintarVentas();
+    }));
+  }
+  $('txtBuscarVenta').addEventListener('input', pintarVentas);
+
+  function sugerirFechaPromesa() {
+    const lab = laboratorios.find(l => l.id === $('selLab').value);
+    const dias = lab?.tiempoPromedioDias || 5;
+    const f = new Date();
+    f.setDate(f.getDate() + dias);
+    $('inFechaProm').value = f.toISOString().slice(0,10);
+  }
+  $('selLab').addEventListener('change', sugerirFechaPromesa);
+
+  // Cargar fórmula desde la última historia clínica (solo optómetra / superadmin; queda auditado)
+  $('btnCargarFormula').addEventListener('click', async () => {
+    const msg = $('msgFormula');
+    msg.className = '';
+    if (!ventaSeleccionada) { msg.className = 'error'; msg.textContent = 'Selecciona primero la venta.'; return; }
+    msg.textContent = 'Buscando la última historia…';
+    try {
+      const q = query(collection(db, 'historias_clinicas'), where('pacienteId', '==', ventaSeleccionada.pacienteId));
+      const snap = await getDocs(q);
+      let ultima = null;
+      snap.forEach(d => {
+        const h = { id: d.id, ...d.data() };
+        if (!ultima || (h.fechaAtencion || '') > (ultima.fechaAtencion || '')) ultima = h;
+      });
+      if (!ultima) { msg.className = 'error'; msg.textContent = 'El paciente no tiene historias registradas.'; return; }
+
+      // Auditoría de lectura de historia (obligatoria)
+      await addDoc(collection(db, 'auditoria'), {
+        usuarioId: uidActual, sucursalId: sedeActiva,
+        accion: 'lectura_historia', coleccion: 'historias_clinicas', documentoId: ultima.id,
+        fecha: serverTimestamp(), detalles: { motivo: 'copia_formula_orden_trabajo' }
+      });
+
+      const fte = ultima.formulaFinal || ultima.refraccion || {};
+      const oj = (ojo) => fte[ojo] || fte[ojo.toUpperCase()] || {};
+      const pon = (id, ojo, campo) => {
+        const d = oj(ojo);
+        const v = d[campo] ?? d[campo.toLowerCase()] ?? '';
+        $(id).value = v === undefined || v === null ? '' : String(v);
+      };
+      ['esfera','cilindro','eje','adicion','dp'].forEach(c => { pon('od_' + c, 'od', c); pon('oi_' + c, 'oi', c); });
+      if (fte.observaciones) $('inObsFormula').value = fte.observaciones;
+      msg.className = 'ok';
+      msg.textContent = 'Fórmula cargada de la atención del ' + (ultima.fechaAtencion || 's/f') + '. Verifícala antes de crear la orden.';
+    } catch (e) {
+      msg.className = 'error';
+      msg.textContent = 'No se pudo leer la historia (' + e.code + ').';
+    }
+  });
+
+  $('btnGuardarOrden').addEventListener('click', async () => {
+    const msg = $('msgNueva');
+    msg.className = 'error';
+    if (!ventaSeleccionada) { msg.textContent = 'Selecciona la venta asociada.'; return; }
+    const labId = $('selLab').value;
+    const lab = laboratorios.find(l => l.id === labId);
+    if (!lab) { msg.textContent = 'Registra y selecciona un laboratorio externo.'; return; }
+    const fechaProm = $('inFechaProm').value;
+    if (!fechaProm) { msg.textContent = 'Define la fecha prometida.'; return; }
+    const hayFormula = ['od_esfera','oi_esfera','od_adicion','oi_adicion'].some(id => $(id).value.trim() !== '');
+    if (!hayFormula) { msg.textContent = 'La fórmula está vacía. Cárgala de la historia o transcríbela de la fórmula impresa.'; return; }
+
+    msg.className = '';
+    msg.textContent = 'Creando orden…';
+    $('btnGuardarOrden').disabled = true;
+
+    const ojo = (p) => ({
+      esfera: $(p + '_esfera').value.trim(), cilindro: $(p + '_cilindro').value.trim(),
+      eje: $(p + '_eje').value.trim(), adicion: $(p + '_adicion').value.trim(), dp: $(p + '_dp').value.trim()
+    });
+    const tratamientos = [...document.querySelectorAll('#zonaTratamientos input:checked')].map(c => c.value);
+    const ahoraISO = new Date().toISOString();
+
+    const datos = {
+      ventaId: ventaSeleccionada.id,
+      ventaRef: refVenta(ventaSeleccionada),
+      pacienteId: ventaSeleccionada.pacienteId || null,
+      pacienteNombre: ventaSeleccionada.pacienteNombre || '',
+      pacienteDocumento: ventaSeleccionada.pacienteDocumento || '',
+      sucursalOrigen: sedeActiva,
+      ruta: 'externa',
+      centroProduccion: labId,
+      laboratorioNombre: lab.nombre,
+      formula: { od: ojo('od'), oi: ojo('oi'), observaciones: $('inObsFormula').value.trim() },
+      especificaciones: {
+        tipoLente: $('selTipoLente').value,
+        material: $('selMaterial').value,
+        tratamientos,
+        montura: $('inMontura').value.trim(),
+        observaciones: $('inObsEspec').value.trim()
+      },
+      estadoActual: 'creada',
+      historialEstados: [{ estado:'creada', fecha: ahoraISO, usuarioId: uidActual, usuarioNombre: perfilActual.nombre, observaciones: '' }],
+      fechaPrometida: fechaProm,
+      fechaRealLista: null,
+      prioridad: $('selPrioridad').value,
+      reprocesos: [],
+      fechaCreacionISO: ahoraISO,
+      creadoPor: uidActual,
+      creadoPorNombre: perfilActual.nombre,
+      fechaCreacion: serverTimestamp()
+    };
+
+    try {
+      const ref = await addDoc(collection(db, 'ordenes_trabajo'), datos);
+      const numeroOrden = 'OT-' + sedeActiva + '-' + ref.id.slice(-6).toUpperCase();
+      await updateDoc(ref, { numeroOrden });
+
+      // Vínculo en la venta (mejor esfuerzo: el optómetra no puede editar ventas)
+      try { await updateDoc(doc(db, 'ventas', ventaSeleccionada.id), { ordenTrabajoId: ref.id, modificadoPor: uidActual, fechaModificacion: serverTimestamp() }); } catch {}
+
+      // Ciclo del paciente → en producción (mejor esfuerzo)
+      if (ventaSeleccionada.pacienteId) {
+        try { await updateDoc(doc(db, 'pacientes', ventaSeleccionada.pacienteId), { estadoCiclo: 'en_produccion', modificadoPor: uidActual, fechaModificacion: serverTimestamp() }); } catch {}
+      }
+
+      // Auditoría
+      await addDoc(collection(db, 'auditoria'), {
+        usuarioId: uidActual, sucursalId: sedeActiva,
+        accion: 'creacion', coleccion: 'ordenes_trabajo', documentoId: ref.id,
+        fecha: serverTimestamp(), detalles: { numeroOrden, laboratorio: lab.nombre }
+      });
+
+      $('veloNueva').classList.add('oculto');
+      await cargarOrdenes();
+      abrirDetalle(ref.id);
+    } catch (e) {
+      msg.className = 'error';
+      msg.textContent = 'No se pudo crear la orden: ' + e.code;
+    } finally {
+      $('btnGuardarOrden').disabled = false;
+    }
+  });
+
+  // ===== Detalle y transiciones =====
+  function abrirDetalle(id) {
+    ordenAbierta = ordenes.find(o => o.id === id);
+    if (!ordenAbierta) return;
+    const o = ordenAbierta;
+
+    $('detNumero').textContent = o.numeroOrden || 'OT-…';
+    $('detSub').textContent = 'Ruta externa · Creada el ' + (o.fechaCreacionISO || '').slice(0,10);
+    $('detChip').innerHTML = '<span class="chip-estado est-' + esc(o.estadoActual) + '">' + esc(NOMBRES_ESTADO[o.estadoActual] || o.estadoActual) + '</span>';
+    $('detPrioridad').innerHTML = o.prioridad === 'urgente' ? '<span class="prioridad-urgente">URGENTE</span>' : '';
+    $('detPaciente').textContent = (o.pacienteNombre || '—') + (o.pacienteDocumento ? ' · ' + o.pacienteDocumento : '');
+    $('detLab').textContent = o.laboratorioNombre || '—';
+    $('detVenta').textContent = o.ventaRef || '—';
+    $('detProm').innerHTML = esc(o.fechaPrometida || '—') + (estaVencida(o) ? ' <span class="error">· VENCIDA</span>' : '');
+    $('detCreador').textContent = o.creadoPorNombre || '—';
+    $('detReprocesos').textContent = (o.reprocesos || []).length;
+
+    const f = o.formula || {};
+    const linea = (n, d) => n + '  Esf ' + (d?.esfera || '—') + ' · Cil ' + (d?.cilindro || '—') + ' · Eje ' + (d?.eje || '—') + ' · Add ' + (d?.adicion || '—') + ' · DP ' + (d?.dp || '—');
+    $('detFormula').innerHTML = esc(linea('OD', f.od)) + '<br>' + esc(linea('OI', f.oi)) +
+      (f.observaciones ? '<br><span style="font-family:Lexend;font-size:12.5px;color:var(--gris)">' + esc(f.observaciones) + '</span>' : '');
+
+    const e = o.especificaciones || {};
+    $('detTipoLente').textContent = e.tipoLente || '—';
+    $('detMaterial').textContent = e.material || '—';
+    $('detTrats').textContent = (e.tratamientos || []).join(', ') || 'Ninguno';
+    $('detMontura').textContent = e.montura || '—';
+    $('detObsEspecPar').classList.toggle('oculto', !e.observaciones);
+    $('detObsEspec').textContent = e.observaciones || '';
+
+    // Timeline
+    $('detTimeline').innerHTML = (o.historialEstados || []).slice().reverse().map(h =>
+      '<div class="evento"><b style="font-weight:500">' + esc(NOMBRES_ESTADO[h.estado] || h.estado) + '</b>' +
+      '<div class="cuando">' + esc((h.fecha || '').replace('T',' ').slice(0,16)) + ' · ' + esc(h.usuarioNombre || '') + '</div>' +
+      (h.observaciones ? '<div class="obs">' + esc(h.observaciones) + '</div>' : '') + '</div>'
+    ).join('') || '<div class="evento">Sin eventos.</div>';
+
+    // Botones de avance según rol (v1.3: actualizan recepcionista y superadmin)
+    const puedeAvanzar = ['superadmin','recepcionista'].includes(perfilActual.rol);
+    $('zonaAvance').classList.toggle('oculto', !puedeAvanzar);
+    $('msgSinPermiso').classList.toggle('oculto', puedeAvanzar || o.estadoActual === 'entregada');
+    $('inObsTransicion').value = '';
+    $('msgAvance').textContent = '';
+    if (puedeAvanzar) {
+      const trans = TRANSICIONES[o.estadoActual] || [];
+      $('botonesAvance').innerHTML = trans.length
+        ? trans.map((t,i) => '<button class="' + (t.peligro ? 'btn-peligro' : 'btn-accion') + '" data-trans="' + i + '">' + esc(t.txt) + '</button>').join('')
+        : '<span class="ok">Orden entregada — ciclo cerrado. Seguimientos programados.</span>';
+      $('botonesAvance').querySelectorAll('[data-trans]').forEach(b =>
+        b.addEventListener('click', () => ejecutarTransicion(TRANSICIONES[o.estadoActual][parseInt(b.dataset.trans,10)])));
+    }
+
+    $('veloDetalle').classList.remove('oculto');
+  }
+  $('btnCerrarDetalle').addEventListener('click', () => $('veloDetalle').classList.add('oculto'));
+
+  async function ejecutarTransicion(t) {
+    const o = ordenAbierta;
+    const msg = $('msgAvance');
+    const obs = $('inObsTransicion').value.trim();
+    if (t.requiereObs && !obs) { msg.textContent = 'El rechazo de QC exige el motivo en observaciones.'; return; }
+    msg.textContent = 'Guardando…';
+    msg.className = '';
+
+    const ahoraISO = new Date().toISOString();
+    const evento = { estado: t.a, fecha: ahoraISO, usuarioId: uidActual, usuarioNombre: perfilActual.nombre, observaciones: obs };
+    const cambios = {
+      estadoActual: t.a,
+      historialEstados: [...(o.historialEstados || []), evento],
+      modificadoPor: uidActual,
+      fechaModificacion: serverTimestamp()
+    };
+    if (t.a === 'lista_entrega') cambios.fechaRealLista = hoyISO();
+    if (t.a === 'devuelta_laboratorio') {
+      cambios.reprocesos = [...(o.reprocesos || []), { motivo: obs, fecha: ahoraISO, responsable: perfilActual.nombre }];
+    }
+
+    try {
+      await updateDoc(doc(db, 'ordenes_trabajo', o.id), cambios);
+
+      // Auditoría de la transición
+      await addDoc(collection(db, 'auditoria'), {
+        usuarioId: uidActual, sucursalId: sedeActiva,
+        accion: 'cambio_estado', coleccion: 'ordenes_trabajo', documentoId: o.id,
+        fecha: serverTimestamp(), detalles: { de: o.estadoActual, a: t.a, numeroOrden: o.numeroOrden }
+      });
+
+      if (t.a === 'lista_entrega') await alListaEntrega(o);
+      if (t.a === 'entregada') await alEntregar(o);
+
+      $('veloDetalle').classList.add('oculto');
+      await cargarOrdenes();
+      abrirDetalle(o.id);
+    } catch (e) {
+      msg.className = 'error';
+      msg.textContent = 'No se pudo actualizar: ' + e.code;
+    }
+  }
+
+  // Gafas listas → notificación en cola + ciclo del paciente
+  async function alListaEntrega(o) {
+    let pac = null;
+    if (o.pacienteId) {
+      try { const s = await getDoc(doc(db, 'pacientes', o.pacienteId)); if (s.exists()) pac = s.data(); } catch {}
+    }
+    const nombreEmpresa = empresa.nombreComercial || 'la óptica';
+    try {
+      await addDoc(collection(db, 'notificaciones'), {
+        tipo: 'gafas_listas',
+        destinatario: pac?.whatsapp || pac?.telefono || '',
+        canal: 'whatsapp',
+        mensaje: 'Hola ' + (o.pacienteNombre || '') + ', tus gafas ya están listas para reclamar en ' + nombreEmpresa + '. ¡Te esperamos! (Orden ' + o.numeroOrden + ')',
+        referencia: { coleccion: 'ordenes_trabajo', documentoId: o.id },
+        estado: 'pendiente',
+        fechaProgramada: hoyISO(),
+        fechaEnvio: null,
+        creadoPor: uidActual,
+        fechaCreacion: serverTimestamp()
+      });
+    } catch {}
+    if (o.pacienteId) {
+      try { await updateDoc(doc(db, 'pacientes', o.pacienteId), { estadoCiclo: 'gafas_listas', modificadoPor: uidActual, fechaModificacion: serverTimestamp() }); } catch {}
+    }
+  }
+
+  // Entregada → nace el motor de recontacto: post-entrega + recall anual
+  async function alEntregar(o) {
+    const post = new Date();
+    post.setDate(post.getDate() + (confSeguimientos.diasPostEntrega || 10));
+    const recall = new Date();
+    recall.setMonth(recall.getMonth() + (confSeguimientos.mesesRecall || 11));
+    const base = {
+      pacienteId: o.pacienteId || null,
+      pacienteNombre: o.pacienteNombre || '',
+      sucursalId: o.sucursalOrigen,
+      estado: 'pendiente',
+      intentos: [],
+      resultado: null,
+      citaGeneradaId: null,
+      ordenId: o.id,
+      numeroOrden: o.numeroOrden,
+      creadoPor: uidActual,
+      fechaCreacion: serverTimestamp()
+    };
+    try {
+      await addDoc(collection(db, 'seguimientos'), { ...base, tipo: 'post_entrega', fechaProgramada: post.toISOString().slice(0,10) });
+      await addDoc(collection(db, 'seguimientos'), { ...base, tipo: 'recall_anual', fechaProgramada: recall.toISOString().slice(0,10) });
+    } catch {}
+    if (o.pacienteId) {
+      try {
+        await updateDoc(doc(db, 'pacientes', o.pacienteId), {
+          estadoCiclo: 'entregado',
+          alertaSeguimiento: { proximaFecha: post.toISOString().slice(0,10), tipo: 'post_entrega' },
+          modificadoPor: uidActual,
+          fechaModificacion: serverTimestamp()
+        });
+      } catch {}
+    }
+  }
+
+  // ===== Impresión white-label =====
+  $('btnImprimirOrden').addEventListener('click', () => {
+    const o = ordenAbierta;
+    if (!o) return;
+    const f = o.formula || {};
+    const e = o.especificaciones || {};
+    const celda = (v) => esc(v || '—');
+    $('areaImpresion').innerHTML =
+      '<div class="imp-cab">' +
+        '<div><h2>' + esc(empresa.nombreComercial || 'Ópticas D-Velez') + '</h2>' +
+          '<p>' + esc(empresa.razonSocial || '') + (empresa.nit ? ' · NIT ' + esc(empresa.nit) : '') + '<br>' +
+          esc([empresa.direccion, empresa.ciudad].filter(Boolean).join(', ')) +
+          (empresa.telefono ? ' · Tel ' + esc(empresa.telefono) : '') + '</p></div>' +
+        '<div><div class="imp-num">' + esc(o.numeroOrden) + '</div>' +
+          '<p style="text-align:right">Orden de trabajo · Ruta externa<br>Emitida: ' + hoyISO() +
+          (o.prioridad === 'urgente' ? '<br><b>PRIORIDAD URGENTE</b>' : '') + '</p></div>' +
+      '</div>' +
+      '<p><b>Laboratorio destino:</b> ' + esc(o.laboratorioNombre || '—') + ' &nbsp;·&nbsp; <b>Fecha prometida:</b> <span style="font-family:\'Spline Sans Mono\'">' + esc(o.fechaPrometida || '—') + '</span></p>' +
+      '<p><b>Paciente:</b> ' + esc(o.pacienteNombre || '—') + '</p>' +
+      '<div class="imp-seccion">Fórmula óptica</div>' +
+      '<table class="imp-formula"><tr><th></th><th>Esfera</th><th>Cilindro</th><th>Eje</th><th>Adición</th><th>DP (mm)</th></tr>' +
+        '<tr><td><b>OD</b></td><td>' + celda(f.od?.esfera) + '</td><td>' + celda(f.od?.cilindro) + '</td><td>' + celda(f.od?.eje) + '</td><td>' + celda(f.od?.adicion) + '</td><td>' + celda(f.od?.dp) + '</td></tr>' +
+        '<tr><td><b>OI</b></td><td>' + celda(f.oi?.esfera) + '</td><td>' + celda(f.oi?.cilindro) + '</td><td>' + celda(f.oi?.eje) + '</td><td>' + celda(f.oi?.adicion) + '</td><td>' + celda(f.oi?.dp) + '</td></tr>' +
+      '</table>' +
+      (f.observaciones ? '<p style="font-size:12px;margin-top:6px"><b>Obs. fórmula:</b> ' + esc(f.observaciones) + '</p>' : '') +
+      '<div class="imp-seccion">Especificaciones</div>' +
+      '<p style="font-size:13px;line-height:1.8"><b>Tipo de lente:</b> ' + celda(e.tipoLente) +
+        ' &nbsp;·&nbsp; <b>Material:</b> ' + celda(e.material) + '<br>' +
+        '<b>Tratamientos:</b> ' + esc((e.tratamientos || []).join(', ') || 'Ninguno') + '<br>' +
+        '<b>Montura:</b> ' + celda(e.montura) +
+        (e.observaciones ? '<br><b>Observaciones:</b> ' + esc(e.observaciones) : '') + '</p>' +
+      '<div class="imp-pie"><span>Este documento acompaña el trabajo al laboratorio. No contiene datos clínicos del paciente.</span>' +
+        '<span>Desarrollado por TourLat</span></div>';
+    window.print();
+  });
+</script>
+
+</body>
+</html>
