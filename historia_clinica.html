@@ -90,6 +90,25 @@
   .enlace-agregar{background:none;border:1px dashed var(--niebla);color:var(--petroleo);border-radius:8px;padding:8px 14px;cursor:pointer;font-family:'Lexend';font-size:.78rem;font-weight:600;width:100%}
   .enlace-agregar:hover{border-color:var(--petroleo);background:var(--petroleo-tinte)}
 
+  /* buscador CIE-10 con autocompletado */
+  .cie-buscador{position:relative;margin-bottom:12px}
+  .cie-buscador input{width:100%;background:var(--fondo);border:1px solid var(--niebla);border-radius:8px;padding:10px 12px;font-family:'Lexend';font-size:.86rem;color:var(--grafito)}
+  .cie-buscador input:focus{border-color:var(--petroleo);outline:none}
+  .cie-resultados{position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--superficie);border:1px solid var(--niebla);border-radius:10px;box-shadow:0 6px 24px rgba(23,26,30,.12);max-height:280px;overflow-y:auto;z-index:40}
+  .cie-item{display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;border-bottom:1px solid var(--niebla)}
+  .cie-item:last-child{border-bottom:none}
+  .cie-item:hover,.cie-item.activo{background:var(--petroleo-tinte)}
+  .cie-item .cod{font-family:'Spline Sans Mono',monospace;font-size:.78rem;font-weight:600;color:var(--petroleo-oscuro);width:64px;flex-shrink:0}
+  .cie-item .nom{font-size:.82rem;line-height:1.35;flex:1}
+  .cie-item .blq{font-family:'Spline Sans Mono',monospace;font-size:.62rem;color:var(--gris);flex-shrink:0}
+  .cie-daga{display:inline-flex;align-items:center;font-size:.6rem;font-weight:700;background:var(--violeta-tinte);color:var(--violeta);border-radius:20px;padding:2px 8px;flex-shrink:0}
+  .cie-sin-resultados{padding:12px 14px;font-size:.8rem;color:var(--gris)}
+  .cie-estado{font-size:.7rem;color:var(--gris);margin-top:6px}
+  .cie-chip{display:flex;align-items:center;gap:10px;background:var(--fondo);border:1px solid var(--niebla);border-left:3px solid var(--petroleo);border-radius:8px;padding:9px 12px}
+  .cie-chip .cod{font-family:'Spline Sans Mono',monospace;font-size:.8rem;font-weight:600;color:var(--petroleo-oscuro);width:64px;flex-shrink:0}
+  .cie-chip .nom{font-size:.83rem;flex:1;line-height:1.35}
+  .cie-chip button{background:none;border:none;color:var(--rojo);cursor:pointer;font-size:1rem;padding:2px 6px;flex-shrink:0}
+
   .pie-acciones{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--superficie);border:1px solid var(--niebla);border-radius:var(--radio);box-shadow:var(--sombra);padding:16px 22px;position:sticky;bottom:12px}
   .mensaje{font-size:.78rem;font-weight:500}
   .mensaje.ok{color:var(--exito)}
@@ -345,8 +364,11 @@
     h += '</div></div>';
 
     h += '<div class="tarjeta"><h3>Diagnósticos (CIE-10)</h3>';
+    h += '<div class="cie-buscador"><input id="cieBusqueda" placeholder="Buscar por código o nombre (Ej.: H52.1 o miopía)…" autocomplete="off">';
+    h += '<div class="cie-resultados oculto" id="cieResultados"></div>';
+    h += '<div class="cie-estado" id="cieEstado">Cargando catálogo CIE-10…</div></div>';
     h += '<div class="lista-diagnosticos" id="listaDiag"></div>';
-    h += '<button type="button" class="enlace-agregar" id="btnAgregarDiag">+ Agregar diagnóstico</button></div>';
+    h += '<button type="button" class="enlace-agregar" id="btnAgregarDiag">+ Agregar diagnóstico manual (fuera del catálogo)</button></div>';
 
     h += '<div class="tarjeta"><h3>Fórmula final (prescripción)</h3>' + filaOjos('rx', true);
     h += '<div class="grilla tres" style="margin-top:12px">';
@@ -372,15 +394,113 @@
     $('contenido').classList.remove('oculto');
     $('contenido').innerHTML = h;
 
-    agregarDiag();
     $('btnAgregarDiag').addEventListener('click', agregarDiag);
     $('btnGuardar').addEventListener('click', guardarHistoria);
+    iniciarBuscadorCIE();
+  }
+
+  // ═════ buscador CIE-10 (catálogo plano en la raíz del sitio) ═════
+  let catalogoCIE = null;
+  let diagSeleccionados = [];
+  let cieActivo = -1, cieVisibles = [];
+
+  function normalizar(t){
+    return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+
+  async function iniciarBuscadorCIE(){
+    const estado = $('cieEstado'), entrada = $('cieBusqueda'), caja = $('cieResultados');
+    try {
+      const r = await fetch('catalogo_cie10.json', { cache:'force-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const datos = await r.json();
+      catalogoCIE = (datos.codigos || []).map(c => ({ ...c, busq: normalizar(c.codigo + ' ' + c.nombre) }));
+      estado.textContent = catalogoCIE.length + ' códigos CIE-10 disponibles (Cap. VII, H00–H59). Los marcados con * requieren código primario en RIPS.';
+    } catch (e) {
+      catalogoCIE = null;
+      estado.textContent = 'No se pudo cargar el catálogo CIE-10 (' + (e.message||'') + '). Usa la entrada manual.';
+      return;
+    }
+
+    entrada.addEventListener('input', () => pintarResultados(entrada.value));
+    entrada.addEventListener('focus', () => { if (entrada.value.trim()) pintarResultados(entrada.value); });
+    entrada.addEventListener('keydown', (ev) => {
+      if (caja.classList.contains('oculto')) return;
+      if (ev.key === 'ArrowDown') { ev.preventDefault(); moverActivo(1); }
+      else if (ev.key === 'ArrowUp') { ev.preventDefault(); moverActivo(-1); }
+      else if (ev.key === 'Enter') { ev.preventDefault(); if (cieActivo >= 0 && cieVisibles[cieActivo]) seleccionarCIE(cieVisibles[cieActivo]); }
+      else if (ev.key === 'Escape') cerrarResultados();
+    });
+    document.addEventListener('click', (ev) => {
+      if (!ev.target.closest('.cie-buscador')) cerrarResultados();
+    });
+  }
+
+  function pintarResultados(texto){
+    const caja = $('cieResultados');
+    const t = normalizar(texto.trim());
+    if (!catalogoCIE || t.length < 2) { cerrarResultados(); return; }
+    const yaElegidos = new Set(diagSeleccionados.map(d => d.codigo));
+    cieVisibles = catalogoCIE.filter(c => !yaElegidos.has(c.codigo) && c.busq.includes(t)).slice(0, 12);
+    cieActivo = -1;
+    if (!cieVisibles.length) {
+      caja.innerHTML = '<div class="cie-sin-resultados">Sin resultados para “' + esc(texto.trim()) + '”. Puedes usar la entrada manual.</div>';
+      caja.classList.remove('oculto');
+      return;
+    }
+    caja.innerHTML = cieVisibles.map((c, i) =>
+      '<div class="cie-item" data-i="' + i + '">' +
+        '<span class="cod">' + esc(c.codigo) + '</span>' +
+        '<span class="nom">' + esc(c.nombre) + '</span>' +
+        (c.dagaAsterisco ? '<span class="cie-daga">RIPS *</span>' : '') +
+        '<span class="blq">' + esc(c.bloque||'') + '</span>' +
+      '</div>'
+    ).join('');
+    caja.querySelectorAll('.cie-item').forEach(el =>
+      el.addEventListener('click', () => seleccionarCIE(cieVisibles[+el.dataset.i])));
+    caja.classList.remove('oculto');
+  }
+
+  function moverActivo(paso){
+    const items = $('cieResultados').querySelectorAll('.cie-item');
+    if (!items.length) return;
+    cieActivo = (cieActivo + paso + items.length) % items.length;
+    items.forEach((el, i) => el.classList.toggle('activo', i === cieActivo));
+    items[cieActivo].scrollIntoView({ block:'nearest' });
+  }
+
+  function cerrarResultados(){
+    $('cieResultados').classList.add('oculto');
+    cieActivo = -1; cieVisibles = [];
+  }
+
+  function seleccionarCIE(c){
+    diagSeleccionados.push({ codigo: c.codigo, nombre: c.nombre, bloque: c.bloque || '', dagaAsterisco: !!c.dagaAsterisco });
+    $('cieBusqueda').value = '';
+    cerrarResultados();
+    pintarSeleccionados();
+    $('cieBusqueda').focus();
+  }
+
+  function pintarSeleccionados(){
+    const zona = $('listaDiag');
+    zona.querySelectorAll('.cie-chip').forEach(el => el.remove());
+    diagSeleccionados.forEach((d, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'cie-chip';
+      chip.innerHTML =
+        '<span class="cod">' + esc(d.codigo) + '</span>' +
+        '<span class="nom">' + esc(d.nombre) + (d.dagaAsterisco ? ' <span class="cie-daga">RIPS *</span>' : '') + '</span>' +
+        '<button type="button" title="Quitar">✕</button>';
+      chip.querySelector('button').addEventListener('click', () => { diagSeleccionados.splice(i,1); pintarSeleccionados(); });
+      zona.insertBefore(chip, zona.firstChild);
+    });
   }
 
   function agregarDiag(){
     const fila = document.createElement('div');
     fila.className = 'diag-fila';
-    fila.innerHTML = '<input class="codigo" placeholder="H52.1"><input class="descripcion" placeholder="Descripción del diagnóstico"><button type="button" title="Quitar">✕</button>';
+    fila.innerHTML = '<input class="codigo" placeholder="Código"><input class="descripcion" placeholder="Descripción del diagnóstico (entrada manual)"><button type="button" title="Quitar">✕</button>';
     fila.querySelector('button').addEventListener('click', () => fila.remove());
     $('listaDiag').appendChild(fila);
   }
@@ -410,10 +530,14 @@
     $('btnGuardar').disabled = true;
     msj.textContent = 'Guardando…';
 
-    const diagnosticos = Array.from(document.querySelectorAll('.diag-fila')).map(f => ({
+    const manuales = Array.from(document.querySelectorAll('.diag-fila')).map(f => ({
       codigo: f.querySelector('.codigo').value.trim().toUpperCase(),
-      descripcion: f.querySelector('.descripcion').value.trim()
-    })).filter(d => d.codigo || d.descripcion);
+      nombre: f.querySelector('.descripcion').value.trim(),
+      bloque: '',
+      dagaAsterisco: false,
+      manual: true
+    })).filter(d => d.codigo || d.nombre);
+    const diagnosticos = diagSeleccionados.concat(manuales);
 
     try {
       const datos = {
@@ -545,7 +669,7 @@
     if (Array.isArray(H.diagnosticos) && H.diagnosticos.length) {
       h += '<div class="dato-grilla">';
       for (const d of H.diagnosticos) {
-        h += '<div class="dato" style="grid-column:1/-1"><span class="dato-valor"><strong class="mono" style="color:var(--petroleo-oscuro)">' + esc(d.codigo||'—') + '</strong> · ' + esc(d.descripcion||'') + '</span></div>';
+        h += '<div class="dato" style="grid-column:1/-1"><span class="dato-valor"><strong class="mono" style="color:var(--petroleo-oscuro)">' + esc(d.codigo||'—') + '</strong> · ' + esc(d.nombre || d.descripcion || '') + (d.dagaAsterisco ? ' <span class="cie-daga">RIPS *</span>' : '') + '</span></div>';
       }
       h += '</div>';
     } else h += '<span class="dato-valor vacio">Sin diagnósticos registrados</span>';
