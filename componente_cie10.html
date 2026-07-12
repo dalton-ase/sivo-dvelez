@@ -1,0 +1,481 @@
+<!--
+  ══════════════════════════════════════════════════════════
+   SIVO — Componente Selector CIE-10
+   Buscador con autocompletado para historias clínicas
+   Diseño: Destello AR
+   Desarrollado por TourLat
+  ══════════════════════════════════════════════════════════
+
+   INTEGRACIÓN EN historia_clinica.html:
+   1. Incluir este bloque dentro del formulario de HC
+   2. El array window.diagnosticosSeleccionados[] contiene
+      los objetos {codigo, nombre, bloque} listos para
+      guardar en Firestore como campo diagnosticos[]
+   3. Llama CIE10.getSeleccionados() para obtener el array
+  ══════════════════════════════════════════════════════════
+-->
+
+<!-- ── CSS Destello AR ─────────────────────────────────── -->
+<style>
+  :root {
+    --destello-gradient: linear-gradient(135deg, #2FD9A8, #4BB8D8, #7C6CF0);
+    --destello-petrol: #0C7268;
+    --destello-petrol-light: #0E8A7E;
+    --destello-surface: #FFFFFF;
+    --destello-surface-alt: #F7FAFA;
+    --destello-text: #1A2332;
+    --destello-text-muted: #64748B;
+    --destello-border: #E2E8F0;
+    --destello-radius: 10px;
+    --destello-shadow: 0 2px 8px rgba(12, 114, 104, 0.08);
+    --destello-font-display: 'Archivo', sans-serif;
+    --destello-font-body: 'Lexend', sans-serif;
+    --destello-font-mono: 'Spline Sans Mono', monospace;
+  }
+
+  .cie10-container {
+    font-family: var(--destello-font-body);
+    color: var(--destello-text);
+    max-width: 100%;
+  }
+
+  .cie10-label {
+    display: block;
+    font-family: var(--destello-font-display);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--destello-petrol);
+    margin-bottom: 6px;
+  }
+
+  .cie10-search-wrap {
+    position: relative;
+  }
+
+  .cie10-input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 1.5px solid var(--destello-border);
+    border-radius: var(--destello-radius);
+    font-family: var(--destello-font-body);
+    font-size: 0.95rem;
+    color: var(--destello-text);
+    background: var(--destello-surface);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    outline: none;
+  }
+  .cie10-input:focus {
+    border-color: var(--destello-petrol);
+    box-shadow: 0 0 0 3px rgba(12, 114, 104, 0.12);
+  }
+  .cie10-input::placeholder {
+    color: var(--destello-text-muted);
+    font-style: italic;
+  }
+
+  .cie10-icon-search {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--destello-text-muted);
+    pointer-events: none;
+  }
+
+  /* Dropdown de resultados */
+  .cie10-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    background: var(--destello-surface);
+    border: 1.5px solid var(--destello-border);
+    border-radius: var(--destello-radius);
+    box-shadow: 0 8px 24px rgba(12, 114, 104, 0.12);
+    z-index: 100;
+    display: none;
+  }
+  .cie10-dropdown.active { display: block; }
+
+  .cie10-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--destello-border);
+  }
+  .cie10-dropdown-item:last-child { border-bottom: none; }
+  .cie10-dropdown-item:hover,
+  .cie10-dropdown-item.highlighted {
+    background: var(--destello-surface-alt);
+  }
+
+  .cie10-item-code {
+    font-family: var(--destello-font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--destello-petrol);
+    background: rgba(12, 114, 104, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    min-width: 52px;
+    text-align: center;
+  }
+
+  .cie10-item-name {
+    font-size: 0.88rem;
+    color: var(--destello-text);
+    flex: 1;
+  }
+
+  .cie10-item-bloque {
+    font-size: 0.7rem;
+    color: var(--destello-text-muted);
+    white-space: nowrap;
+  }
+
+  .cie10-no-results {
+    padding: 14px;
+    text-align: center;
+    color: var(--destello-text-muted);
+    font-size: 0.88rem;
+    font-style: italic;
+  }
+
+  /* Tags seleccionados */
+  .cie10-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    min-height: 10px;
+  }
+
+  .cie10-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-family: var(--destello-font-body);
+    color: #FFFFFF;
+    background: var(--destello-petrol);
+    animation: cie10FadeIn 0.2s ease;
+  }
+
+  .cie10-tag-code {
+    font-family: var(--destello-font-mono);
+    font-weight: 600;
+  }
+
+  .cie10-tag-remove {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .cie10-tag-remove:hover { opacity: 1; }
+
+  .cie10-hint {
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: var(--destello-text-muted);
+  }
+  .cie10-hint .cie10-asterisco {
+    color: #E06040;
+    font-weight: 600;
+  }
+
+  @keyframes cie10FadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* Scrollbar Destello */
+  .cie10-dropdown::-webkit-scrollbar { width: 6px; }
+  .cie10-dropdown::-webkit-scrollbar-track { background: transparent; }
+  .cie10-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(12, 114, 104, 0.25);
+    border-radius: 3px;
+  }
+</style>
+
+<!-- ── HTML ─────────────────────────────────────────────── -->
+<div class="cie10-container" id="cie10-selector">
+  <label class="cie10-label">Diagnósticos CIE-10</label>
+
+  <div class="cie10-search-wrap">
+    <svg class="cie10-icon-search" width="16" height="16" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text"
+           class="cie10-input"
+           id="cie10-search"
+           placeholder="Buscar por código o nombre… ej: H52.1, miopía"
+           autocomplete="off"
+           spellcheck="false" />
+    <div class="cie10-dropdown" id="cie10-dropdown"></div>
+  </div>
+
+  <div class="cie10-tags" id="cie10-tags"></div>
+  <p class="cie10-hint">
+    Máximo 5 diagnósticos por historia. Los códigos con
+    <span class="cie10-asterisco">*</span> requieren código primario acompañante en RIPS.
+  </p>
+</div>
+
+<!-- ── JavaScript ──────────────────────────────────────── -->
+<script>
+/**
+ * SIVO CIE-10 Selector
+ * Busca en Firestore colección catalogo_cie10
+ * Expone: CIE10.getSeleccionados() → [{codigo, nombre, bloque}]
+ */
+const CIE10 = (() => {
+  const MAX_DIAGNOSTICOS = 5;
+  const MAX_RESULTADOS = 15;
+
+  let catalogo = [];       // cache local
+  let seleccionados = [];  // diagnósticos elegidos
+  let highlightIdx = -1;
+
+  const $input    = document.getElementById('cie10-search');
+  const $dropdown = document.getElementById('cie10-dropdown');
+  const $tags     = document.getElementById('cie10-tags');
+
+  // ── Cargar catálogo desde Firestore ──────────────────
+  async function cargarCatalogo() {
+    try {
+      // Asume que `db` es la instancia global de Firestore en SIVO
+      const snapshot = await db.collection('catalogo_cie10')
+        .where('activo', '==', true)
+        .orderBy('codigo')
+        .get();
+
+      catalogo = snapshot.docs.map(doc => doc.data());
+      console.log(`✅ CIE-10: ${catalogo.length} códigos cargados`);
+    } catch (err) {
+      console.error('❌ Error cargando CIE-10:', err);
+      // Fallback: intentar cargar desde JSON local
+      try {
+        const resp = await fetch('./catalogo_cie10.json');
+        const data = await resp.json();
+        catalogo = data.codigos;
+        console.log(`⚠️ CIE-10: ${catalogo.length} códigos cargados desde JSON local (fallback)`);
+      } catch (e2) {
+        console.error('❌ No se pudo cargar el catálogo CIE-10');
+      }
+    }
+  }
+
+  // ── Normalizar texto para búsqueda ──────────────────
+  function normalizar(texto) {
+    return texto
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s.]/g, '')
+      .trim();
+  }
+
+  // ── Buscar en catálogo ──────────────────────────────
+  function buscar(query) {
+    if (!query || query.length < 2) return [];
+    const q = normalizar(query);
+    const yaSeleccionados = new Set(seleccionados.map(s => s.codigo));
+
+    return catalogo
+      .filter(c => {
+        if (yaSeleccionados.has(c.codigo || c.codigoDisplay?.replace('*', ''))) return false;
+        const target = normalizar(c.nombre + ' ' + (c.codigo || '') + ' ' + (c.codigoDisplay || ''));
+        return target.includes(q);
+      })
+      .slice(0, MAX_RESULTADOS);
+  }
+
+  // ── Renderizar dropdown ─────────────────────────────
+  function renderDropdown(resultados) {
+    highlightIdx = -1;
+    if (!resultados.length) {
+      $dropdown.innerHTML = '<div class="cie10-no-results">Sin resultados</div>';
+      $dropdown.classList.add('active');
+      return;
+    }
+
+    $dropdown.innerHTML = resultados.map((r, i) => {
+      const cod = r.codigoDisplay || r.codigo;
+      const esAsterisco = r.dagaAsterisco ? ' <span class="cie10-asterisco" style="color:#E06040">*</span>' : '';
+      return `
+        <div class="cie10-dropdown-item" data-idx="${i}">
+          <span class="cie10-item-code">${cod}${esAsterisco}</span>
+          <span class="cie10-item-name">${r.nombre}</span>
+          <span class="cie10-item-bloque">${r.bloque}</span>
+        </div>`;
+    }).join('');
+
+    $dropdown.classList.add('active');
+
+    // Click en item
+    $dropdown.querySelectorAll('.cie10-dropdown-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.idx);
+        seleccionar(resultados[idx]);
+      });
+    });
+  }
+
+  // ── Seleccionar diagnóstico ─────────────────────────
+  function seleccionar(item) {
+    if (seleccionados.length >= MAX_DIAGNOSTICOS) {
+      alert(`Máximo ${MAX_DIAGNOSTICOS} diagnósticos por historia clínica.`);
+      return;
+    }
+
+    const codigo = (item.codigo || item.codigoDisplay || '').replace('*', '');
+    if (seleccionados.find(s => s.codigo === codigo)) return;
+
+    seleccionados.push({
+      codigo: codigo,
+      codigoDisplay: item.codigoDisplay || item.codigo,
+      nombre: item.nombre,
+      bloque: item.bloque,
+      dagaAsterisco: item.dagaAsterisco || false
+    });
+
+    renderTags();
+    $input.value = '';
+    $dropdown.classList.remove('active');
+    $input.focus();
+
+    // Disparar evento custom para que historia_clinica.html lo capture
+    document.dispatchEvent(new CustomEvent('cie10:change', {
+      detail: { diagnosticos: getSeleccionados() }
+    }));
+  }
+
+  // ── Remover diagnóstico ─────────────────────────────
+  function remover(codigo) {
+    seleccionados = seleccionados.filter(s => s.codigo !== codigo);
+    renderTags();
+    document.dispatchEvent(new CustomEvent('cie10:change', {
+      detail: { diagnosticos: getSeleccionados() }
+    }));
+  }
+
+  // ── Renderizar tags ─────────────────────────────────
+  function renderTags() {
+    $tags.innerHTML = seleccionados.map(s => `
+      <span class="cie10-tag">
+        <span class="cie10-tag-code">${s.codigoDisplay || s.codigo}</span>
+        ${s.nombre}
+        <span class="cie10-tag-remove" data-codigo="${s.codigo}" title="Remover">×</span>
+      </span>
+    `).join('');
+
+    $tags.querySelectorAll('.cie10-tag-remove').forEach(el => {
+      el.addEventListener('click', () => remover(el.dataset.codigo));
+    });
+  }
+
+  // ── Obtener seleccionados (API pública) ─────────────
+  function getSeleccionados() {
+    return seleccionados.map(s => ({
+      codigo: s.codigo,
+      nombre: s.nombre,
+      bloque: s.bloque
+    }));
+  }
+
+  // ── Pre-cargar diagnósticos existentes (edición) ────
+  function cargarExistentes(diagnosticosArr) {
+    if (!Array.isArray(diagnosticosArr)) return;
+    diagnosticosArr.forEach(d => {
+      const encontrado = catalogo.find(c =>
+        (c.codigo || c.codigoDisplay?.replace('*', '')) === d.codigo
+      );
+      if (encontrado) {
+        seleccionados.push({
+          codigo: d.codigo,
+          codigoDisplay: encontrado.codigoDisplay || d.codigo,
+          nombre: encontrado.nombre || d.nombre,
+          bloque: encontrado.bloque || d.bloque || '',
+          dagaAsterisco: encontrado.dagaAsterisco || false
+        });
+      } else {
+        // Código no encontrado en catálogo, agregar tal cual
+        seleccionados.push({
+          codigo: d.codigo,
+          codigoDisplay: d.codigo,
+          nombre: d.nombre || 'Código no catalogado',
+          bloque: d.bloque || '',
+          dagaAsterisco: false
+        });
+      }
+    });
+    renderTags();
+  }
+
+  // ── Event listeners ─────────────────────────────────
+  $input.addEventListener('input', (e) => {
+    const q = e.target.value.trim();
+    if (q.length < 2) {
+      $dropdown.classList.remove('active');
+      return;
+    }
+    const resultados = buscar(q);
+    renderDropdown(resultados);
+  });
+
+  // Navegación con teclado
+  $input.addEventListener('keydown', (e) => {
+    const items = $dropdown.querySelectorAll('.cie10-dropdown-item');
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      highlightIdx = Math.min(highlightIdx + 1, items.length - 1);
+      items.forEach((it, i) => it.classList.toggle('highlighted', i === highlightIdx));
+      items[highlightIdx]?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      highlightIdx = Math.max(highlightIdx - 1, 0);
+      items.forEach((it, i) => it.classList.toggle('highlighted', i === highlightIdx));
+      items[highlightIdx]?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter' && highlightIdx >= 0) {
+      e.preventDefault();
+      items[highlightIdx]?.click();
+    } else if (e.key === 'Escape') {
+      $dropdown.classList.remove('active');
+    }
+  });
+
+  // Cerrar dropdown al hacer click fuera
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#cie10-selector')) {
+      $dropdown.classList.remove('active');
+    }
+  });
+
+  // ── API pública ─────────────────────────────────────
+  return {
+    init: cargarCatalogo,
+    getSeleccionados,
+    cargarExistentes,
+    getCatalogo: () => catalogo
+  };
+})();
+
+// Auto-inicializar cuando el DOM esté listo
+// (en SIVO se llamará después del login: CIE10.init())
+</script>
